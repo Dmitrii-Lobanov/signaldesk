@@ -1,0 +1,39 @@
+name: Product outcome
+description: Define a user outcome and the evidence required to complete it
+title: "[Outcome]: "
+labels:
+  - product
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who has what problem, in which context?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Intended outcome
+      description: What should the user be able to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Include behavior, failures, permissions, and accessibility.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Tests, measurements, recordings, or usability observations required.
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: What is deliberately outside this change?
