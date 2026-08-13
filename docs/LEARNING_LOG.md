@@ -17,6 +17,12 @@ Use one entry per week. Keep it concise and evidence-based.
 - Resource and relevant chapter:
 - What changed in the implementation because of it:
 
+### Exit test
+
+- Result and evidence:
+- Concept I can explain without notes:
+- Concept I used but cannot yet defend in an interview:
+
 ### Live-coding practice
 
 - Exercise:
@@ -30,6 +36,12 @@ Use one entry per week. Keep it concise and evidence-based.
 - Test or measurement:
 - Failure mode verified:
 - Architecture decision:
+- PR, ADR, test, query plan, trace, or deployment link:
+
+### Scope and time
+
+- Scope changed and why:
+- Learning / implementation / React practice / evidence hours:
 
 ### Reflection
 

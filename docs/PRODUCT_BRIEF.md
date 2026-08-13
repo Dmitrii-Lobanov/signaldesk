@@ -45,6 +45,8 @@ sequenceDiagram
 
 ## MVP scope
 
+This section describes the complete MVP. The first ten weeks target the narrower portfolio slice in [ROADMAP.md](ROADMAP.md); incomplete items remain planned and must not be presented as shipped.
+
 ### Included
 
 - Workspace and membership with owner, editor, and viewer roles.

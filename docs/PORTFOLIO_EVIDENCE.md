@@ -11,16 +11,30 @@
 
 ## Evidence checklist
 
+### Required for the ten-week portfolio slice
+
 - Public production demo with a safe seeded workspace.
 - Two-minute product video and five-minute technical walkthrough.
 - Architecture diagram and data-model diagram that match the code.
-- At least five meaningful ADRs.
+- Meaningful ADRs for material decisions; do not create records to meet a numeric target.
 - CI results covering types, linting, tests, and build.
-- Accessibility report for critical workflows.
-- One frontend and one backend/database performance investigation.
-- Failure demo: duplicate import, partial rejection, retry, and recovery.
+- Accessibility report for the shipped critical workflow.
+- One measured frontend or backend/database performance investigation, with the other added when the relevant workflow exists.
 - Security demo: viewer restriction and cross-workspace access denial.
 - Product case study with problem, constraints, decisions, measures, and reflection.
+
+### Required for the complete MVP
+
+- Failure demo covering duplicate import, partial rejection, retry, and recovery.
+- Frontend and backend/database performance investigations.
+- Evidence grouping, prioritization, and decision-history walkthrough.
+- Accessibility coverage for every critical MVP workflow.
+
+### Optional depth evidence
+
+- Background-job retry and terminal failure demonstration.
+- SSE recovery or reconnection investigation.
+- Load test, advanced query optimization, or deployment incident exercise.
 
 ## Case-study outline
 

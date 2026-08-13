@@ -10,6 +10,18 @@
 
 ## Planned system
 
+The diagrams distinguish the initial executable boundary from conditional later components.
+
+```mermaid
+flowchart LR
+    Browser["Next.js web application"] -->|"REST / OpenAPI"| API["NestJS API"]
+    API --> DB[("PostgreSQL, from Week 3")]
+```
+
+Next.js initially acts as the web application, not an automatic proxy for every NestJS endpoint. Direct browser requests, Server Component requests, and Route Handler/BFF behavior have different authentication, caching, CORS, and deployment consequences. The request and session boundary will be recorded in an ADR before authentication is implemented.
+
+### Conditional target system
+
 ```mermaid
 flowchart TB
     Browser["Next.js web application"]
@@ -32,7 +44,7 @@ flowchart TB
     Worker --> Observe
 ```
 
-The MVP starts with synchronous manual entry and small CSV imports. The worker and queue are introduced when import duration and retry behavior make the boundary useful.
+The MVP starts with synchronous manual entry and small CSV imports. The worker, queue, storage, and live-progress channel are conditional components introduced only when duration, retry, isolation, or storage requirements make their boundaries useful.
 
 ## Proposed repository layout
 
@@ -40,11 +52,11 @@ The MVP starts with synchronous manual entry and small CSV imports. The worker a
 apps/
   web/                 Next.js product interface
   api/                 NestJS REST API
-  worker/              Import and enrichment jobs
+  worker/              Import and enrichment jobs, when justified
 packages/
-  ui/                  Accessible reusable components
-  contracts/           Generated API types and shared schemas
-  config/              TypeScript, lint, and test configuration
+  ui/                  Shared components, after real reuse exists
+  contracts/           Generated API types, when product endpoints require them
+  config/              Shared configuration, after duplication exists
 docs/
   decisions/           Architecture decision records
 ```
@@ -99,7 +111,7 @@ Authorization tests cover cross-workspace access, role boundaries, and indirect 
 
 ## Live updates
 
-Server-Sent Events are the default for import progress and activity notifications because the server is the primary sender. WebSockets are deferred until a bidirectional, low-latency requirement is demonstrated.
+Polling or Server-Sent Events are the defaults for import progress and activity notifications because the server is the primary sender. Choose between them using update frequency, connection lifetime, hosting constraints, and recovery requirements. WebSockets are deferred until a bidirectional, low-latency requirement is demonstrated.
 
 ## Observability
 
@@ -112,7 +124,8 @@ Every request and job carries a correlation identifier. Structured logs include 
 
 ## Deployment stages
 
-1. Local Docker Compose with web, API, and PostgreSQL.
-2. Hosted preview environments and managed PostgreSQL.
-3. Worker and Redis when asynchronous imports are introduced.
-4. Performance and reliability changes driven by measurements.
+1. Local web and API process with a liveness check.
+2. PostgreSQL and Docker Compose when persistence is introduced.
+3. Hosted preview environments and managed PostgreSQL.
+4. Worker and Redis when asynchronous imports are introduced.
+5. Performance and reliability changes driven by measurements.

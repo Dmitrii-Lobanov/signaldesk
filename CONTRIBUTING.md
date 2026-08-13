@@ -18,6 +18,8 @@ SignalDesk is currently a solo portfolio project, but it follows collaboration p
 
 ## Pull-request checklist
 
+Mark each item as complete, deferred, or not applicable with a reason, following [the quality bar](docs/QUALITY_BAR.md). Do not add irrelevant infrastructure or security behavior merely to satisfy the checklist mechanically.
+
 - [ ] User outcome and scope are clear.
 - [ ] Loading, empty, error, success, and permission states are covered.
 - [ ] Keyboard and accessibility behavior are verified.

@@ -48,13 +48,15 @@ The project is intended to demonstrate more than framework knowledge:
 
 - **Web:** Next.js, React, TypeScript
 - **API:** NestJS, TypeScript, REST with an OpenAPI contract
-- **Data:** PostgreSQL with Prisma
+- **Data:** PostgreSQL with Prisma, subject to an ADR before persistence work begins
 - **Async work:** Redis and BullMQ after the synchronous MVP
-- **Live updates:** Server-Sent Events where one-way status updates are sufficient
+- **Live updates:** polling or Server-Sent Events where one-way status updates are sufficient; WebSockets only for a demonstrated bidirectional requirement
 - **Quality:** React Testing Library, Vitest, Playwright, accessibility checks, and contract tests
 - **Operations:** Docker Compose locally, CI on GitHub Actions, structured logs, error monitoring, and product analytics
 
 The stack is a plan, not a claim about completed functionality. Each material decision will be captured in an ADR.
+
+The ten-week roadmap targets a credible portfolio slice, not every item in the complete MVP. The roadmap controls delivery order; the learning plan supplies only the material needed for the active milestone.
 
 ## Documentation
 
@@ -64,7 +66,7 @@ The stack is a plan, not a claim about completed functionality. Each material de
 | [Architecture](docs/ARCHITECTURE.md) | System boundaries, data flow, reliability, and security |
 | [Data model](docs/DATA_MODEL.md) | Core entities, relationships, and invariants |
 | [10-week roadmap](docs/ROADMAP.md) | Approximately 10 hours per week of focused delivery |
-| [Full-stack skills plan](docs/FULLSTACK_SKILLS_PLAN.md) | Learning targets and evidence of competence |
+| [Learning plan](docs/LEARNING_PLAN.md) | Milestone-aligned curriculum, exit tests, and competency targets |
 | [React live-coding track](docs/REACT_LIVE_CODING.md) | Interview practice mapped into reusable product components |
 | [Quality bar](docs/QUALITY_BAR.md) | Definition of done for product and engineering work |
 | [Portfolio evidence](docs/PORTFOLIO_EVIDENCE.md) | What hiring managers should be able to verify |

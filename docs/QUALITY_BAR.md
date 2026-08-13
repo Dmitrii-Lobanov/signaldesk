@@ -4,6 +4,8 @@
 
 A feature is complete when the user outcome works, the principal failure modes are recoverable, and another engineer can understand and operate it.
 
+For every milestone, mark each quality area as **applicable**, **deferred**, or **not applicable**, with a reason. A read-only liveness endpoint, for example, does not require authorization or a transaction, while a workspace mutation does.
+
 ### Product behavior
 
 - Acceptance criteria describe a user outcome, not just a component.
@@ -34,6 +36,8 @@ A feature is complete when the user outcome works, the principal failure modes a
 - Pagination, ordering, and error shapes are deterministic.
 - Transactions protect multi-write invariants.
 - Migrations are reviewed for existing data and recovery strategy.
+- Concurrent behavior is tested where lost updates or invariant violations are possible.
+- API error schemas and the generated OpenAPI contract remain compatible with consumers.
 
 ### Reliability and security
 
@@ -47,6 +51,7 @@ A feature is complete when the user outcome works, the principal failure modes a
 
 - Domain rules have focused unit tests where useful.
 - Database and authorization behavior have integration tests.
+- Persistence integration tests run against an isolated real database with deterministic cleanup.
 - API compatibility has contract coverage.
 - A small number of critical user journeys have E2E tests.
 - Tests are deterministic and failures produce actionable output.
@@ -55,5 +60,5 @@ A feature is complete when the user outcome works, the principal failure modes a
 
 - Structured logs include correlation and outcome data.
 - Errors are captured with enough context to reproduce safely.
-- Health and readiness checks reflect actual dependencies.
+- Liveness and readiness have distinct semantics; readiness reflects the dependencies required to serve traffic.
 - The deployment and rollback or forward-recovery process is documented.

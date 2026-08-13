@@ -24,6 +24,19 @@ Avoid copying the interview solution into production unchanged.
 | Reorderable list | Immutable updates and accessibility | Prioritization shortlist |
 | Async resource explorer | Caching, cancellation, loading states | Import and integration browser |
 
+## Suggested delivery order
+
+Use product need rather than catalogue order:
+
+1. Async service status for the foundation slice.
+2. Sortable and filterable table for the feedback API and inbox.
+3. Accessible autocomplete for customer and tag selection.
+4. Multi-step form for import configuration.
+5. Toast and recovery UI when reliable mutations begin.
+6. Modal, tabs, activity feeds, and reordering only when their product workflows exist.
+
+Do not force a new exercise into every milestone. Repeat a weak exercise or spend the practice hour reviewing reasoning when no catalogue item fits.
+
 ## Interview rubric
 
 Score each practice from 0–2 on:
