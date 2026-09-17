@@ -62,3 +62,20 @@ For every milestone, mark each quality area as **applicable**, **deferred**, or 
 - Errors are captured with enough context to reproduce safely.
 - Liveness and readiness have distinct semantics; readiness reflects the dependencies required to serve traffic.
 - The deployment and rollback or forward-recovery process is documented.
+
+### AI-assisted engineering
+
+- The engineer understands and can explain generated code, inspects every diff and owns the result.
+- Tasks have explicit context, constraints and acceptance criteria before delegation.
+- Dependencies are verified; security-sensitive code receives focused review and negative tests.
+- Credentials and customer data are excluded from prompts and logs; use synthetic examples.
+- Verification checks actual behavior rather than accepting agent-written tests as independent proof.
+- Weekly evidence records an agent contribution, an error/correction and an independent explanation or debugging exercise.
+
+### Conditional AI product feature
+
+- Suggestions are validated, workspace-scoped and never applied without authorized human acceptance.
+- Untrusted feedback cannot override application rules; invalid values and stale suggestions are rejected.
+- Timeouts, limits, provider failures and manual fallback are demonstrated.
+- A held-out labeled evaluation records quality, latency, estimated cost, model/prompt versions and limitations.
+- The ship/defer decision is documented. If the experiment is deferred, mark this section deferred with the reason.

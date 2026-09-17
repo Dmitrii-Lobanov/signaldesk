@@ -27,3 +27,7 @@ Mark each item as complete, deferred, or not applicable with a reason, following
 - [ ] Types, tests, lint, and build pass.
 - [ ] Observability and failure recovery are addressed.
 - [ ] Relevant documentation or ADRs are updated.
+
+## AI-assisted changes
+
+Start with human-written acceptance criteria and give one coding agent a bounded task with relevant context. Inspect every diff, verify dependencies and behavior, and explain the result independently. Use synthetic examples and never share secrets or customer data with the agent. Record useful contributions and corrections in the weekly learning log; generated output does not reduce the quality bar.

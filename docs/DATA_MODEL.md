@@ -1,5 +1,11 @@
 # Data model
 
+## Delivery scope
+
+This is the planned full-product model, not a claim that all entities are implemented. The eight-week slice needs users, workspaces, memberships, feedback, minimal customer association, product areas, tags and audit events. Introduce schema incrementally: persistence starts in Week 1 and access roles in Week 2. Imports, opportunities and decisions remain deferred.
+
+For the conditional AI experiment, suggestions remain separate from accepted classification. Decide whether suggestion persistence is needed in the implementation ADR. Record model/prompt versions in evaluation artifacts; any persisted suggestion must be workspace-scoped and tied to the feedback version. Acceptance uses the existing audited mutation path.
+
 ## Core relationships
 
 ```mermaid

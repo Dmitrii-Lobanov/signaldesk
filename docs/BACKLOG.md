@@ -1,67 +1,49 @@
-# MVP backlog
+# Delivery backlog
 
-The complete MVP is broader than the ten-week portfolio slice in [ROADMAP.md](ROADMAP.md). Items marked **portfolio slice** are the initial delivery target; the remaining outcomes continue after Week 10 if they cannot be completed without reducing verification quality.
+[ROADMAP.md](ROADMAP.md) controls the eight-week portfolio slice. The complete product remains broader; unchecked plans are not shipped features.
 
-## Epic 1: Workspace foundation
+## Required: foundation and access — Weeks 1–2
 
-**Outcome:** members access only the workspace data and actions allowed by their role.
+- Deployed Next.js/NestJS/PostgreSQL capture-and-list path with CI.
+- Protected development deployment until authentication and authorization pass.
+- Seeded workspaces and editor/viewer membership; server-enforced permissions.
+- Negative tests for direct API access, viewer mutations and cross-workspace reads/writes/relationships.
 
-**Portfolio slice:** seeded or minimally managed workspaces, role enforcement, and cross-workspace isolation. Invitation administration may follow.
+## Required: feedback inbox — Week 3
 
-- Create a workspace and invite a member.
-- Enforce owner, editor, and viewer permissions.
-- Prove cross-workspace isolation with negative integration tests.
-- Record membership changes in the audit log.
+- Capture, inspect, find and manually classify feedback.
+- Essential filters, deterministic pagination and URL state.
+- Keyboard operation and complete validation/loading/empty/error/permission states.
 
-## Epic 2: Feedback inbox
+## Required: reliable changes — Week 4
 
-**Outcome:** an editor can capture, find, and classify customer evidence efficiently.
+- Editing with atomic audit events.
+- Safe duplicate submission and explicit stale-edit handling.
+- Failure/rollback integration tests and a critical E2E journey.
 
-**Portfolio slice:** manual capture, deterministic pagination, essential filters, URL state, and keyboard operation. Saved views and advanced bulk workflows may follow.
+## Conditional: AI classification — Week 5
 
-- Create and edit a signal with customer, source, occurrence time, and content.
-- Filter by status, source, tag, customer, product area, and date.
-- Preserve filters and selection in the URL.
-- Support keyboard-first triage and accessible bulk actions.
+Start only after core gates pass; otherwise finish core work.
 
-## Epic 3: Reliable CSV import
+- Server-side suggestions of product area/tags using authorized context.
+- Human accept/edit/reject; normal authorized and audited mutation path.
+- Structured-output validation, timeouts, limits and manual fallback.
+- Held-out synthetic evaluation with quality, latency and cost results.
+- Explicit ship/defer decision based on evidence.
 
-**Outcome:** an editor can import imperfect data without duplicating successful work.
+## Required: operations and evidence — Weeks 6–8
 
-**Portfolio slice:** one bounded synchronous import path with preview, row errors, stable identity, and safe retry. Background processing and live progress require measured justification.
+- Correlated logs, error monitoring, readiness and recovery instructions.
+- Incident drill, accessibility review, usability feedback and one performance investigation.
+- Safe public demo, walkthrough, case study and two AI-assisted development examples.
+- Documentation that distinguishes shipped scope from plans.
 
-- Preview mapping and validation before starting.
-- Display accepted, rejected, duplicate, and pending counts.
-- Report row-specific errors and allow corrected retries.
-- Make repeated submissions idempotent.
+## Deferred: full MVP and depth
 
-## Epic 4: Evidence grouping
-
-**Outcome:** related feedback can support one opportunity without losing source context.
-
-**Post-slice by default:** begin only if the foundation, feedback, security, and import evidence is complete.
-
-- Suggest and manually select related feedback.
-- Create an opportunity from selected evidence.
-- Add or remove evidence with audit history.
-- Show representative excerpts and affected customers.
-
-## Epic 5: Prioritization and decisions
-
-**Outcome:** a team can make and later explain a prioritization decision.
-
-**Post-slice by default:** do not rush scoring and decisions merely to claim the complete MVP.
-
-- Configure a small scoring model with visible inputs.
-- Add qualitative rationale and constraints.
-- Record accepted, deferred, rejected, and investigating outcomes.
-- Expose a chronological decision history.
-
-## Epic 6: Operational confidence
-
-**Outcome:** a developer can detect, locate, and explain a critical failure.
-
-- Add structured request and job logging.
-- Capture frontend and backend errors.
-- Correlate import UI, API request, and worker job.
-- Document one incident drill and recovery.
+- Membership invitations and elaborate administration.
+- CSV import preview, validation, stable row identity, partial rejection and safe retries.
+- Saved views, advanced bulk workflows and analytics.
+- Evidence grouping with source context and tenant-safe links.
+- Opportunities, transparent scoring and decisions with evidence and rationale.
+- Background workers, Redis/BullMQ and live progress only when measured requirements justify them.
+- Vector search, clustering and additional integrations only after core user needs are validated.

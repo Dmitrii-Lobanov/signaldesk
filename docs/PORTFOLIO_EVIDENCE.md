@@ -1,65 +1,56 @@
 # Portfolio evidence plan
 
-## What a hiring manager should be able to verify
+## Required for the eight-week slice
 
-- The product solves a coherent customer and business problem.
-- The UI handles complex data and workflows without sacrificing accessibility.
-- Frontend architecture is connected to API, data, and operational constraints.
-- Security, failure recovery, and observability are implemented rather than mentioned.
-- Performance claims include reproducible measurements.
-- Important decisions include alternatives and consequences.
+- Public demo with isolated synthetic data and constrained demo access.
+- Two-minute product video and concise technical walkthrough.
+- README setup/status, architecture and data model matching implemented behavior.
+- Meaningful ADRs for material decisions, with alternatives and consequences.
+- Passing CI for types, lint, tests and builds; a critical end-to-end journey and database/authorization integration tests.
+- Security demonstration: viewer mutation denial and cross-workspace access denial through direct API calls.
+- Reliability demonstration: transactional audit rollback, duplicate submission handling and stale edit behavior.
+- One correlated failure investigation and documented recovery procedure.
+- Accessibility review of the shipped critical workflow.
+- One reproducible frontend or backend/database performance investigation; before/after evidence when a change is justified.
+- Findings from 2–3 task-based user sessions, or an explicit recruitment limitation and labeled internal walkthrough.
+- At least two AI-assisted development examples: original task/context, agent contribution, your corrections, verification and what you can explain independently. Remove sensitive data.
+- Concise case study with constraints, decisions, evidence and limitations.
 
-## Evidence checklist
+## Conditional AI classification evidence
 
-### Required for the ten-week portfolio slice
+Required only if the Week 5 experiment ships:
 
-- Public production demo with a safe seeded workspace.
-- Two-minute product video and five-minute technical walkthrough.
-- Architecture diagram and data-model diagram that match the code.
-- Meaningful ADRs for material decisions; do not create records to meet a numeric target.
-- CI results covering types, linting, tests, and build.
-- Accessibility report for the shipped critical workflow.
-- One measured frontend or backend/database performance investigation, with the other added when the relevant workflow exists.
-- Security demo: viewer restriction and cross-workspace access denial.
-- Product case study with problem, constraints, decisions, measures, and reflection.
+- Labeled synthetic evaluation set with tuning/held-out separation and ambiguous/adversarial examples.
+- Model/prompt versions, product-area accuracy, tag precision/recall, latency and estimated cost with method and limitations.
+- Demonstration of accept/edit/reject, invalid-output handling, timeout/provider outage and manual fallback.
+- Proof that suggestions do not mutate feedback without an authorized human action.
 
-### Required for the complete MVP
-
-- Failure demo covering duplicate import, partial rejection, retry, and recovery.
-- Frontend and backend/database performance investigations.
-- Evidence grouping, prioritization, and decision-history walkthrough.
-- Accessibility coverage for every critical MVP workflow.
-
-### Optional depth evidence
-
-- Background-job retry and terminal failure demonstration.
-- SSE recovery or reconnection investigation.
-- Load test, advanced query optimization, or deployment incident exercise.
+If deferred, document why. AI-assisted development evidence remains required.
 
 ## Case-study outline
 
-1. The customer-feedback problem and target user.
-2. The narrow workflow selected for the MVP.
-3. The hardest product interaction and its alternatives.
-4. The tenant, authorization, and data-integrity model.
-5. Import reliability and observable failure handling.
-6. Performance diagnosis with before/after evidence.
-7. Accessibility and testing strategy.
-8. What was deliberately not built.
-9. What user testing changed.
-10. What the next engineer should know.
+1. Customer-feedback problem and deliberately narrow capture-and-classify workflow.
+2. UI, API, data and authorization boundaries.
+3. Transactions, retries, stale edits and audit history.
+4. AI-assisted workflow: useful output, mistakes and your judgment.
+5. Optional classification experiment and its measured limitations.
+6. Operations, accessibility, usability and performance evidence.
+7. What remains unbuilt and the next constraint to investigate.
 
-## Demo script
+## Eight-week demo script
 
-1. Enter as an editor in a seeded workspace.
-2. Import a CSV containing valid, invalid, and duplicate rows.
-3. Continue working while import progress updates.
-4. Filter and classify signals from the keyboard.
-5. Group evidence into an opportunity and inspect source context.
-6. Change role to viewer and demonstrate protected mutations.
-7. Record a decision and inspect the audit history.
-8. Show logs or traces for one request and one job.
+1. Sign in as an editor and capture a synthetic feedback signal.
+2. Find it through filters, inspect it and manually classify it using the keyboard.
+3. Edit it and inspect audit evidence; demonstrate a recoverable failure.
+4. Show viewer write denial and cross-workspace denial.
+5. If shipped, request a classification suggestion and accept or reject it; show manual fallback.
+6. Trace one failure using correlated logs and explain recovery.
+7. Show CI, measurements and an AI-generated mistake you corrected.
+
+## Later MVP evidence
+
+CSV import retry/partial rejection, opportunity grouping, scoring and decision history, queues and live progress belong to later milestones. They are not promised in the eight-week demo.
 
 ## Claim discipline
 
-Never present seeded usage, synthetic benchmarks, or planned features as real customer results. Label the dataset, environment, measurement method, and limitations.
+Never present synthetic benchmarks, seeded usage, planned features or internal walkthroughs as real customer results. Label environments, datasets, participants, methods and limitations. Do not claim AI productivity improvements without comparable measurement.

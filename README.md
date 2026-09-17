@@ -2,7 +2,7 @@
 
 **A product-feedback intelligence workspace that turns scattered customer signals into evidence-backed product decisions.**
 
-SignalDesk is a portfolio project for demonstrating senior product-frontend judgment and end-to-end TypeScript ownership. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
+SignalDesk is a portfolio project for demonstrating senior product-frontend judgment, end-to-end TypeScript ownership, and disciplined AI-assisted engineering. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
 
 > Status: product definition and architecture. Implementation has not started.
 
@@ -56,7 +56,7 @@ The project is intended to demonstrate more than framework knowledge:
 
 The stack is a plan, not a claim about completed functionality. Each material decision will be captured in an ADR.
 
-The ten-week roadmap targets a credible portfolio slice, not every item in the complete MVP. The roadmap controls delivery order; the learning plan supplies only the material needed for the active milestone.
+The eight-week roadmap targets a credible portfolio slice, not every item in the complete MVP. The roadmap controls delivery order; the learning plan supplies only the material needed for the active milestone.
 
 ## Documentation
 
@@ -65,7 +65,7 @@ The ten-week roadmap targets a credible portfolio slice, not every item in the c
 | [Product brief](docs/PRODUCT_BRIEF.md) | Users, jobs, scope, workflows, and success measures |
 | [Architecture](docs/ARCHITECTURE.md) | System boundaries, data flow, reliability, and security |
 | [Data model](docs/DATA_MODEL.md) | Core entities, relationships, and invariants |
-| [10-week roadmap](docs/ROADMAP.md) | Approximately 10 hours per week of focused delivery |
+| [8-week roadmap](docs/ROADMAP.md) | 15–20 hours per week of focused delivery and AI-assisted practice |
 | [Learning plan](docs/LEARNING_PLAN.md) | Milestone-aligned curriculum, exit tests, and competency targets |
 | [React live-coding track](docs/REACT_LIVE_CODING.md) | Interview practice mapped into reusable product components |
 | [Quality bar](docs/QUALITY_BAR.md) | Definition of done for product and engineering work |
@@ -81,7 +81,15 @@ The ten-week roadmap targets a credible portfolio slice, not every item in the c
 4. Treat failure states, permissions, accessibility, and observability as product features.
 5. Keep claims in the case study traceable to code, tests, or measured results.
 
-## Initial success criteria
+## Eight-week target
+
+Ship an authenticated, deployed feedback inbox with persistent capture, search/filtering, manual classification, reliable editing, tenant isolation and audit evidence. Verify it with tests, monitoring, usability/accessibility checks and one performance investigation. Demonstrate AI-assisted engineering through reviewed changes and documented corrections every week.
+
+AI classification suggestions are a conditional Week 5 experiment with human approval and evaluation. If the core workflow is unstable after Week 4, defer the experiment. CSV imports, queues, live updates, clustering, scoring and elaborate membership administration remain outside this deadline.
+
+The budget is 15–20 hours weekly. This is a capability and portfolio target, not a promise of employment or senior full-stack expertise. See [ADR 0002](docs/decisions/0002-eight-week-ai-assisted-delivery.md) for the scope change.
+
+## Complete MVP success criteria
 
 The MVP is successful when a team member can import or enter feedback, find and group related signals, create an opportunity with supporting evidence, record a prioritization decision, and see a complete audit trail. Technical success criteria live in the [quality bar](docs/QUALITY_BAR.md).
 

@@ -43,9 +43,17 @@ sequenceDiagram
     Decision-->>Contributor: Expose status and outcome
 ```
 
+## Eight-week portfolio slice
+
+Deliver capture, retrieval, inspection, manual classification and reliable editing of feedback inside an authenticated workspace. Include editor/viewer restrictions, tenant isolation and transactional audit evidence. Deploy and validate the workflow before expanding breadth.
+
+A conditional Week 5 experiment may suggest product area and tags; a person must accept or edit suggestions before they change feedback. Evaluate usefulness on labeled synthetic examples and preserve manual operation during provider failures. This does not automate prioritization.
+
+CSV imports, opportunities, scoring, full decision history and broad analytics are later MVP work. The measures for this slice are capture/classification time, evidence retrieval, critical keyboard-flow completion and engineering evidence in the roadmap. Import and opportunity measures below apply only when those later workflows ship.
+
 ## MVP scope
 
-This section describes the complete MVP. The first ten weeks target the narrower portfolio slice in [ROADMAP.md](ROADMAP.md); incomplete items remain planned and must not be presented as shipped.
+This section describes the complete MVP. The first eight weeks target the narrower portfolio slice in [ROADMAP.md](ROADMAP.md); incomplete items remain planned and must not be presented as shipped.
 
 ### Included
 

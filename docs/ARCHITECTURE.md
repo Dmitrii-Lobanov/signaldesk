@@ -4,7 +4,7 @@
 
 - Make authorization and tenant boundaries explicit.
 - Keep the first deployment understandable by one product engineer.
-- Support reliable imports and traceable mutations.
+- Support reliable feedback changes and traceable mutations; imports follow the portfolio slice.
 - Preserve a fast, accessible React experience with large datasets.
 - Add operational complexity only when a measured requirement justifies it.
 
@@ -15,7 +15,7 @@ The diagrams distinguish the initial executable boundary from conditional later 
 ```mermaid
 flowchart LR
     Browser["Next.js web application"] -->|"REST / OpenAPI"| API["NestJS API"]
-    API --> DB[("PostgreSQL, from Week 3")]
+    API --> DB[("PostgreSQL, from Week 1")]
 ```
 
 Next.js initially acts as the web application, not an automatic proxy for every NestJS endpoint. Direct browser requests, Server Component requests, and Route Handler/BFF behavior have different authentication, caching, CORS, and deployment consequences. The request and session boundary will be recorded in an ADR before authentication is implemented.
@@ -44,7 +44,7 @@ flowchart TB
     Worker --> Observe
 ```
 
-The MVP starts with synchronous manual entry and small CSV imports. The worker, queue, storage, and live-progress channel are conditional components introduced only when duration, retry, isolation, or storage requirements make their boundaries useful.
+The eight-week slice starts with synchronous manual entry and classification. CSV imports follow the slice. The worker, queue, storage, and live-progress channel are conditional components introduced only when duration, retry, isolation, or storage requirements make their boundaries useful.
 
 ## Proposed repository layout
 
@@ -122,10 +122,17 @@ Every request and job carries a correlation identifier. Structured logs include 
 - Is the failure isolated to one workspace or import?
 - Did the user recover or abandon the flow?
 
+## Conditional AI classification boundary
+
+In Week 5, after core gates pass, the API may call one model provider through a server-side adapter. Keep credentials on the server. Resolve workspace permissions before loading feedback and treat feedback text as untrusted data, never as executable instructions. Send only bounded synthetic or explicitly approved content.
+
+Validate structured suggestions against permitted workspace product areas and tags. Suggestions cannot write to the database as classifications; human acceptance uses the existing authorized, transactional audit path and checks for stale feedback. Keep external calls outside database transactions. Apply timeouts, request limits and manual fallback. Record model/prompt versions and privacy-safe quality, latency and cost evidence. No worker, vector store or agent framework is required.
+
 ## Deployment stages
 
-1. Local web and API process with a liveness check.
-2. PostgreSQL and Docker Compose when persistence is introduced.
-3. Hosted preview environments and managed PostgreSQL.
-4. Worker and Redis when asynchronous imports are introduced.
-5. Performance and reliability changes driven by measurements.
+1. Week 1: local and protected hosted web/API/PostgreSQL slice with CI and synthetic data. Protect both web and API before application authentication exists.
+2. Week 2: authentication and tested server-side workspace/role enforcement before opening application access.
+3. Week 5, conditional: server-side classification adapter after core reliability gates pass.
+4. Week 6: monitoring, readiness and rehearsed deployment/data recovery.
+5. Week 8: public demo with isolated synthetic data, constrained accounts, limits and a reset strategy.
+6. After the slice: imports, workers or live delivery only when justified by measured needs.

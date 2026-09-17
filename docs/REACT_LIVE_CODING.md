@@ -31,9 +31,11 @@ Use product need rather than catalogue order:
 1. Async service status for the foundation slice.
 2. Sortable and filterable table for the feedback API and inbox.
 3. Accessible autocomplete for customer and tag selection.
-4. Multi-step form for import configuration.
+4. Classification controls and error recovery for the core inbox; import configuration is deferred.
 5. Toast and recovery UI when reliable mutations begin.
 6. Modal, tabs, activity feeds, and reordering only when their product workflows exist.
+
+Practice within the roadmap’s 10% independent explanation/debugging allocation; do not add a separate weekly curriculum. Use no coding agent during the interview pass.
 
 Do not force a new exercise into every milestone. Repeat a weak exercise or spend the practice hour reviewing reasoning when no catalogue item fits.
 

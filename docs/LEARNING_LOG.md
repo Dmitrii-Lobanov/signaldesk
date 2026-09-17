@@ -38,10 +38,20 @@ Use one entry per week. Keep it concise and evidence-based.
 - Architecture decision:
 - PR, ADR, test, query plan, trace, or deployment link:
 
+### AI-assisted development evidence
+
+- Task, acceptance criteria and context supplied:
+- Agent/model used and useful contribution:
+- Mistake or unsupported assumption identified:
+- My correction and verification evidence:
+- What I explained, modified or debugged without agent help:
+- Sanitized diff, test or example link:
+- If classification is evaluated: dataset split, model/prompt version, quality, latency, cost and limitations:
+
 ### Scope and time
 
 - Scope changed and why:
-- Learning / implementation / React practice / evidence hours:
+- Building and verification / targeted learning / independent practice / evidence hours (target 60% / 20% / 10% / 10% of 15–20 hours):
 
 ### Reflection
 
