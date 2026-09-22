@@ -18,7 +18,7 @@ AI-assisted development is required throughout. An AI classification feature is 
 
 **Outcome:** submit feedback through the web interface and retrieve it after a service restart.
 
-- Create the minimal Next.js/NestJS workspace and PostgreSQL setup; decide the ORM in an ADR before persistence work. Prisma remains the proposed choice.
+- Create the minimal Next.js/NestJS workspace and PostgreSQL setup; use TypeORM as decided in [ADR 0003](decisions/0003-use-typeorm-for-persistence.md).
 - Add reviewed migrations and synthetic seeds with workspace-aware feedback records. Introduce only the schema needed now; add membership and roles in Week 2.
 - Implement validated create/list endpoints, a minimal OpenAPI contract, and form/list loading, empty, success and error states.
 - Set up type checks, linting, meaningful tests and builds in CI. Document environment configuration and local startup.

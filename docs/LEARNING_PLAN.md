@@ -10,7 +10,7 @@ Backend and AI claims must be supported by shipped behavior and independent expl
 
 ## Stack and budget
 
-Keep Next.js, NestJS, TypeScript and PostgreSQL, with Prisma proposed pending the Week 1 ADR. Use REST/OpenAPI, an established authentication solution, meaningful integration/E2E tests, CI and deployment. Defer workers, Redis and live updates.
+Keep Next.js, NestJS, TypeScript and PostgreSQL, with TypeORM selected in [ADR 0003](decisions/0003-use-typeorm-for-persistence.md). Use REST/OpenAPI, an established authentication solution, meaningful integration/E2E tests, CI and deployment. Defer workers, Redis and live updates.
 
 Allocate 15–20 hours weekly: 9–12 hours building and verification, 3–4 targeted learning, 1.5–2 independent debugging/explanation and interview practice, and 1.5–2 evidence. React practice fits within the independent-practice allocation rather than adding another curriculum. At lower availability, reduce scope or extend the timeline.
 
@@ -36,21 +36,21 @@ Keep this index stable even when the weekly delivery sequence changes. Use only 
 - [Next.js documentation](https://nextjs.org/docs)
 - [Next.js authentication guidance](https://nextjs.org/docs/app/guides/authentication)
 - [PostgreSQL documentation](https://www.postgresql.org/docs/current/)
-- [Prisma documentation](https://www.prisma.io/docs)
+- [TypeORM documentation](https://typeorm.io/docs/)
 - [Docker documentation](https://docs.docker.com/)
 
 ## Eight-week learning sequence
 
-| Week | Study only what unblocks delivery | Independent exit test |
-| --- | --- | --- |
-| 1 | Node HTTP/async errors; Nest modules and validation; PostgreSQL schema/migrations; minimal deployment and CI | Trace a form submission through API validation to persisted data and explain how it is deployed |
-| 2 | Authentication versus authorization; sessions/cookies or tokens; tenant-safe queries and relationships | Explain and test why a direct API call cannot bypass workspace or viewer restrictions |
-| 3 | API contracts; stable pagination; URL state; accessible forms and tables | Diagnose a filter/pagination bug and complete classification using only a keyboard |
-| 4 | Transactions; duplicate requests; stale updates; behavior-focused integration/E2E tests | Force a failure, explain rollback and demonstrate a safe retry |
-| 5 | If core gates pass: structured model outputs, prompt boundaries, held-out evaluations, latency/cost measurement | Explain a wrong suggestion and demonstrate validation and manual fallback; otherwise complete core gaps |
-| 6 | Correlation IDs; privacy-aware logging; readiness; migrations, backups and recovery | Diagnose an injected failure and recover using the documented procedure |
-| 7 | Task-based usability sessions; accessibility; browser profiling or PostgreSQL query plans | Explain one observed problem and support a change or no-change decision with evidence |
-| 8 | Technical communication; architecture trade-offs; reproducible demos | Demonstrate the product and explain key backend and AI decisions without the agent |
+| Week | Study only what unblocks delivery                                                                               | Independent exit test                                                                                   |
+| ---- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1    | Node HTTP/async errors; Nest modules and validation; PostgreSQL schema/migrations; minimal deployment and CI    | Trace a form submission through API validation to persisted data and explain how it is deployed         |
+| 2    | Authentication versus authorization; sessions/cookies or tokens; tenant-safe queries and relationships          | Explain and test why a direct API call cannot bypass workspace or viewer restrictions                   |
+| 3    | API contracts; stable pagination; URL state; accessible forms and tables                                        | Diagnose a filter/pagination bug and complete classification using only a keyboard                      |
+| 4    | Transactions; duplicate requests; stale updates; behavior-focused integration/E2E tests                         | Force a failure, explain rollback and demonstrate a safe retry                                          |
+| 5    | If core gates pass: structured model outputs, prompt boundaries, held-out evaluations, latency/cost measurement | Explain a wrong suggestion and demonstrate validation and manual fallback; otherwise complete core gaps |
+| 6    | Correlation IDs; privacy-aware logging; readiness; migrations, backups and recovery                             | Diagnose an injected failure and recover using the documented procedure                                 |
+| 7    | Task-based usability sessions; accessibility; browser profiling or PostgreSQL query plans                       | Explain one observed problem and support a change or no-change decision with evidence                   |
+| 8    | Technical communication; architecture trade-offs; reproducible demos                                            | Demonstrate the product and explain key backend and AI decisions without the agent                      |
 
 For Week 5, use the selected model provider's official documentation for structured outputs, limits, data handling and pricing once the provider is chosen. Record the model and prompt versions used. No provider choice or course completion is required ahead of that milestone.
 

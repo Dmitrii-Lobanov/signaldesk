@@ -48,7 +48,7 @@ The project is intended to demonstrate more than framework knowledge:
 
 - **Web:** Next.js, React, TypeScript
 - **API:** NestJS, TypeScript, REST with an OpenAPI contract
-- **Data:** PostgreSQL with Prisma, subject to an ADR before persistence work begins
+- **Data:** PostgreSQL with TypeORM, selected in [ADR 0003](docs/decisions/0003-use-typeorm-for-persistence.md)
 - **Async work:** Redis and BullMQ after the synchronous MVP
 - **Live updates:** polling or Server-Sent Events where one-way status updates are sufficient; WebSockets only for a demonstrated bidirectional requirement
 - **Quality:** React Testing Library, Vitest, Playwright, accessibility checks, and contract tests
