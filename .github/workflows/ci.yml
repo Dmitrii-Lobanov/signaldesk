@@ -45,6 +45,12 @@ jobs:
       - name: Type-check API
         run: ./node_modules/.bin/tsc --noEmit -p apps/api/tsconfig.json
 
+      - name: Generate Next.js types
+        run: npm exec --workspace=apps/web -- next typegen
+
+      - name: Type-check web
+        run: ./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json
+
       - name: Type-check web
         run: ./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json
 
