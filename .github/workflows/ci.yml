@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: postgresql://signaldesk:signaldesk_ci@localhost:5432/signaldesk_test
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: signaldesk_test
+          POSTGRES_USER: signaldesk
+          POSTGRES_PASSWORD: signaldesk_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U signaldesk -d signaldesk_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check API
+        run: ./node_modules/.bin/tsc --noEmit -p apps/api/tsconfig.json
+
+      - name: Type-check web
+        run: ./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json
+
+      - name: Lint API
+        run: npm run lint --workspace=apps/api
+
+      - name: Lint web
+        run: npm run lint --workspace=apps/web
+
+      - name: Test API units
+        run: npm run test --workspace=apps/api
+
+      - name: Build API
+        run: npm run build --workspace=apps/api
+
+      - name: Migrate test database
+        run: node node_modules/typeorm/cli.js migration:run -d apps/api/dist/data-source.js
+
+      - name: Test API with PostgreSQL
+        run: npm run test:e2e --workspace=apps/api
+
+      - name: Build web
+        run: npm run build --workspace=apps/web

@@ -29,6 +29,11 @@ describe('Feedback API (e2e)', () => {
     );
     await app.init();
     database = app.get(DataSource);
+
+    await database.query(
+      'INSERT INTO workspaces (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
+      ['11111111-1111-4111-8111-111111111111', 'E2E workspace'],
+    );
   });
 
   afterAll(async () => {
