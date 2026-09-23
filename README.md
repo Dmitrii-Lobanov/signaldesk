@@ -4,7 +4,40 @@
 
 SignalDesk is a portfolio project for demonstrating senior product-frontend judgment, end-to-end TypeScript ownership, and disciplined AI-assisted engineering. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
 
-> Status: product definition and architecture. Implementation has not started.
+> Status: Week 1 local feedback capture and listing works with Next.js, NestJS, and PostgreSQL. Protected development deployment is pending.
+
+## Run locally
+
+Requirements: Node.js 24 and Docker.
+
+From the repository root, create `.env` from `.env.example` if you do not already have one. Keep `.env` out of Git.
+
+```sh
+cp .env.example .env
+npm ci
+docker compose up -d --wait postgres
+npm run build --workspace=apps/api
+node --env-file=.env node_modules/typeorm/cli.js migration:run -d apps/api/dist/data-source.js
+docker compose exec -T postgres psql -U signaldesk -d signaldesk < apps/api/db/seed.sql
+```
+
+Start the API in one terminal:
+
+```sh
+npm run start:dev --workspace=apps/api
+```
+
+Start the web app in another:
+
+```sh
+npm run dev --workspace=apps/web
+```
+
+Open `http://localhost:3000`. The web app uses `http://localhost:3001` for the API by default. Submit feedback and check that it appears in the list. API documentation is available at `http://localhost:3001/api`.
+
+To verify persistence, stop **only the API** with Ctrl-C, start it again, and reload the web page. The feedback should still be there because PostgreSQL stores it in the Docker volume.
+
+For API integration tests, use the separate `signaldesk_test` database. Never point those tests at the development database.
 
 ## The problem
 
@@ -60,18 +93,18 @@ The eight-week roadmap targets a credible portfolio slice, not every item in the
 
 ## Documentation
 
-| Document | Purpose |
-| --- | --- |
-| [Product brief](docs/PRODUCT_BRIEF.md) | Users, jobs, scope, workflows, and success measures |
-| [Architecture](docs/ARCHITECTURE.md) | System boundaries, data flow, reliability, and security |
-| [Data model](docs/DATA_MODEL.md) | Core entities, relationships, and invariants |
-| [8-week roadmap](docs/ROADMAP.md) | 15–20 hours per week of focused delivery and AI-assisted practice |
-| [Learning plan](docs/LEARNING_PLAN.md) | Milestone-aligned curriculum, exit tests, and competency targets |
-| [React live-coding track](docs/REACT_LIVE_CODING.md) | Interview practice mapped into reusable product components |
-| [Quality bar](docs/QUALITY_BAR.md) | Definition of done for product and engineering work |
-| [Portfolio evidence](docs/PORTFOLIO_EVIDENCE.md) | What hiring managers should be able to verify |
-| [Backlog](docs/BACKLOG.md) | MVP epics and acceptance outcomes |
-| [Decision records](docs/decisions/) | Important decisions and their trade-offs |
+| Document                                             | Purpose                                                           |
+| ---------------------------------------------------- | ----------------------------------------------------------------- |
+| [Product brief](docs/PRODUCT_BRIEF.md)               | Users, jobs, scope, workflows, and success measures               |
+| [Architecture](docs/ARCHITECTURE.md)                 | System boundaries, data flow, reliability, and security           |
+| [Data model](docs/DATA_MODEL.md)                     | Core entities, relationships, and invariants                      |
+| [8-week roadmap](docs/ROADMAP.md)                    | 15–20 hours per week of focused delivery and AI-assisted practice |
+| [Learning plan](docs/LEARNING_PLAN.md)               | Milestone-aligned curriculum, exit tests, and competency targets  |
+| [React live-coding track](docs/REACT_LIVE_CODING.md) | Interview practice mapped into reusable product components        |
+| [Quality bar](docs/QUALITY_BAR.md)                   | Definition of done for product and engineering work               |
+| [Portfolio evidence](docs/PORTFOLIO_EVIDENCE.md)     | What hiring managers should be able to verify                     |
+| [Backlog](docs/BACKLOG.md)                           | MVP epics and acceptance outcomes                                 |
+| [Decision records](docs/decisions/)                  | Important decisions and their trade-offs                          |
 
 ## Delivery principles
 
