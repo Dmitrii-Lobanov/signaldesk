@@ -1,48 +1,98 @@
 # Week 1 protected development deployment
 
-SignalDesk runs on one Oracle Cloud Always Free Ubuntu VM. Docker Compose runs
-Next.js, NestJS, and PostgreSQL. Only SSH is reachable from the internet.
-Next.js binds to the VM's loopback address and is accessed through an SSH tunnel.
-Use synthetic feedback only.
+SignalDesk runs on the `signaldesk-dev` EC2 instance in AWS `us-east-2`
+(Ubuntu 26.04). Docker Compose runs Next.js, NestJS, and PostgreSQL.
+The web app binds only to the VM's loopback address and is accessed through
+an SSH tunnel. Use synthetic feedback only.
 
-## VM setup
+This EC2 instance uses AWS Free plan credits while running; it is not an
+Always Free instance.
 
-Create an Always Free VM.Standard.A1.Flex Ubuntu 24.04 instance in the
-`signaldesk-vcn` public subnet with a public IPv4 address and an SSH key.
+## VM and network
 
-In the public subnet's security list, allow inbound TCP port 22 from your own
-public IP address with `/32`. Do not add inbound rules for ports 3000, 3001,
-or 5432.
+The instance is `i-02fa4b4902626f926`, with security group
+`sg-03a5ceb1f51a39700`. Its public IPv4 address may change after the
+instance is stopped and started.
 
-Connect as `ubuntu` with the private SSH key. Install Docker Engine and the
-Compose plugin using Docker's official Ubuntu instructions:
-https://docs.docker.com/engine/install/ubuntu/
+Keep these inbound security-group rules:
 
-Verify:
+- SSH (TCP 22) from the current Mac public IP with `/32`.
+- SSH (TCP 22) from the AWS-managed
+  `com.amazonaws.us-east-2.ec2-instance-connect` prefix list.
+- TCP 443 from the current Mac public IP with `/32`, for SSH from networks
+  that block outbound port 22.
+
+Do not add inbound rules for ports 3000, 3001, or 5432. Port 443 carries SSH
+on this VM; it is not an HTTPS web endpoint. Update the `/32` rules if the
+Mac's public IP changes.
+
+Use **EC2 → Instances → signaldesk-dev → Connect → EC2 Instance Connect**
+to open a browser terminal as `ubuntu`. This access uses port 22 and the
+AWS-managed prefix-list rule.
+
+Install Docker Engine and the Compose plugin using Docker's
+[official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/).
+Verify the installation:
 
 ```sh
 sudo docker compose version
 ```
 
-## Deploy
+## SSH on port 443
 
-Clone the repository onto the VM and enter its root directory. Create an
-untracked `.env.deploy` file with:
-
-```dotenv
-POSTGRES_DB=signaldesk
-POSTGRES_USER=signaldesk
-POSTGRES_PASSWORD=YOUR_LONG_RANDOM_ALPHANUMERIC_PASSWORD
-DATABASE_URL=postgresql://signaldesk:THE_SAME_PASSWORD@postgres:5432/signaldesk
-```
-
-Use a unique password; never commit or share this file. Restrict its permissions:
+Ubuntu uses `ssh.socket`. Keep port 22 available for EC2 Instance Connect
+while also listening on port 443:
 
 ```sh
-chmod 600 .env.deploy
+printf 'Port 22\nPort 443\n' | sudo tee /etc/ssh/sshd_config.d/50-signaldesk-ports.conf
+sudo sshd -t
+sudo systemctl daemon-reload
+sudo systemctl restart ssh.socket
+sudo ss -ltnp '( sport = :22 or sport = :443 )'
 ```
 
-Start PostgreSQL and the API, then apply the migration and synthetic seed:
+The final command should show listeners on both ports. Keep the EC2 Instance
+Connect browser terminal open until SSH from the Mac succeeds.
+
+On the Mac, restrict the private key's permissions and connect, replacing
+the IP if the instance's public IP has changed:
+
+```sh
+chmod 400 ~/Downloads/signaldesk_001.pem
+ssh -p 443 -i ~/Downloads/signaldesk_001.pem ubuntu@INSTANCE_PUBLIC_IP
+```
+
+Verify the SSH host-key fingerprint through EC2 Instance Connect before
+accepting it on the Mac:
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+## Deploy
+
+In the VM terminal, clone the repository and enter it:
+
+```sh
+git clone https://github.com/Dmitrii-Lobanov/signaldesk.git
+cd signaldesk
+```
+
+Create an untracked `.env.deploy` with a unique database password:
+
+```sh
+umask 077
+DB_PASSWORD=$(openssl rand -hex 32)
+printf 'POSTGRES_DB=signaldesk\nPOSTGRES_USER=signaldesk\nPOSTGRES_PASSWORD=%s\nDATABASE_URL=postgresql://signaldesk:%s@postgres:5432/signaldesk\n' "$DB_PASSWORD" "$DB_PASSWORD" > .env.deploy
+unset DB_PASSWORD
+chmod 600 .env.deploy
+sudo docker compose --env-file .env.deploy -f compose.deploy.yaml config -q
+```
+
+Never commit, print, or share `.env.deploy`.
+
+Start PostgreSQL and the API. Run the migration and synthetic seed **once**
+on a new database, then start the web app:
 
 ```sh
 sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml up -d --build postgres api
@@ -50,27 +100,33 @@ sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deplo
 sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml exec -T postgres psql -U signaldesk -d signaldesk < apps/api/db/seed.sql
 sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml up -d --build web
 sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml ps
+curl -I http://127.0.0.1:3000
 ```
 
-The web mapping should show `127.0.0.1:3000->3000/tcp`. API and PostgreSQL
-must have no host port mappings.
+The web mapping should show `127.0.0.1:3000->3000/tcp`, with no host port
+mapping for the API or PostgreSQL. The local `curl` should return HTTP 200.
 
 ## Access and verify
 
-On your own computer, open an SSH tunnel, replacing the key path and VM IP:
+On the **Mac**, open the SSH tunnel and leave that terminal running:
 
 ```sh
-ssh -i /ABSOLUTE/PATH/TO/PRIVATE_KEY -N -L 3002:127.0.0.1:3000 ubuntu@VM_PUBLIC_IP
+ssh -p 443 -i ~/Downloads/signaldesk_001.pem -o ExitOnForwardFailure=yes -N -L 3002:127.0.0.1:3000 ubuntu@INSTANCE_PUBLIC_IP
 ```
 
-Open `http://localhost:3002`. Confirm the seeded feedback appears, submit a
-new item, and reload the page.
+Open <http://localhost:3002>. Confirm the seeded feedback appears. Submit
+a new synthetic feedback item and reload the page.
 
-Restart the application containers on the VM:
+Restart the containers on the VM:
 
 ```sh
-sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml restart api web
+cd ~/signaldesk
+sudo docker compose -p signaldesk-deploy --env-file .env.deploy -f compose.deploy.yaml restart
 ```
 
-Reload the page through the SSH tunnel. The new item must still appear.
-Do not run `down -v`: that removes the PostgreSQL volume.
+Reload <http://localhost:3002> again. The new feedback must still appear.
+Do not run `down -v`: it deletes the PostgreSQL data volume.
+
+When finished working, stop the EC2 instance in AWS to conserve Free plan
+credits. Starting it again may assign a new public IP; use the new IP in the
+SSH command and tunnel.
