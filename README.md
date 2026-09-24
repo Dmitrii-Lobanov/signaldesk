@@ -4,7 +4,7 @@
 
 SignalDesk is a portfolio project for demonstrating senior product-frontend judgment, end-to-end TypeScript ownership, and disciplined AI-assisted engineering. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
 
-> Status: Week 1 local feedback capture and listing works with Next.js, NestJS, and PostgreSQL. Protected development deployment is pending.
+> Status: Week 1 complete. Feedback capture and listing run locally and in a protected AWS EC2 development deployment; persistence after restart and CI have been verified.
 
 ## Run locally
 

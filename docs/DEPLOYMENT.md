@@ -54,19 +54,19 @@ sudo ss -ltnp '( sport = :22 or sport = :443 )'
 The final command should show listeners on both ports. Keep the EC2 Instance
 Connect browser terminal open until SSH from the Mac succeeds.
 
+Verify the SSH host-key fingerprint through EC2 Instance Connect before
+accepting it on the Mac:
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
 On the Mac, restrict the private key's permissions and connect, replacing
 the IP if the instance's public IP has changed:
 
 ```sh
 chmod 400 ~/Downloads/signaldesk_001.pem
 ssh -p 443 -i ~/Downloads/signaldesk_001.pem ubuntu@INSTANCE_PUBLIC_IP
-```
-
-Verify the SSH host-key fingerprint through EC2 Instance Connect before
-accepting it on the Mac:
-
-```sh
-ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
 ## Deploy
