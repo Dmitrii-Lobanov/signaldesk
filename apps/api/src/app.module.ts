@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { auth } from './auth/auth.js';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { FeedbackModule } from './feedback/feedback.module.js';
         retryDelay: 1000,
       }),
     }),
+    AuthModule.forRoot({ auth }),
     FeedbackModule,
   ],
   controllers: [AppController],
