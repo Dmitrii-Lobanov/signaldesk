@@ -25,6 +25,14 @@
   border-radius: 6px;
 }
 
+.form input {
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  border: 1px solid #777;
+  border-radius: 6px;
+}
+
 .form button {
   width: fit-content;
   padding: 10px 16px;

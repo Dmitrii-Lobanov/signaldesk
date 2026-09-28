@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { WorkspaceMembership } from './workspaces/workspace-membership.entity.js';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -8,15 +10,19 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        AppService,
+        {
+          provide: getRepositoryToken(WorkspaceMembership),
+          useValue: { find: async () => [] },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  it('returns the public root response', () => {
+    expect(appController.getHello()).toBe('Hello World!');
   });
 });

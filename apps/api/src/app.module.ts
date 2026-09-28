@@ -5,6 +5,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { FeedbackModule } from './feedback/feedback.module.js';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { WorkspaceMembership } from './workspaces/workspace-membership.entity.js';
 import { auth } from './auth/auth.js';
 
 @Module({
@@ -24,6 +25,7 @@ import { auth } from './auth/auth.js';
         retryDelay: 1000,
       }),
     }),
+    TypeOrmModule.forFeature([WorkspaceMembership]),
     AuthModule.forRoot({ auth }),
     FeedbackModule,
   ],

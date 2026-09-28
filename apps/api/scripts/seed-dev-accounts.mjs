@@ -1,7 +1,9 @@
 import { betterAuth } from 'better-auth';
+import { hashPassword } from 'better-auth/crypto';
 import pg from 'pg';
 
 const { Pool } = pg;
+const resetPasswords = process.argv.includes('--reset-passwords');
 const workspaceId = '11111111-1111-4111-8111-111111111111';
 
 function required(name) {
@@ -54,11 +56,54 @@ async function setUpUser(email, password, name, role) {
       body: { email, password, name },
     });
   } else {
-    // Confirm that these credentials belong to the existing account
-    // before assigning it a workspace role.
-    await auth.api.signInEmail({
-      body: { email, password },
-    });
+    try {
+      await auth.api.signInEmail({
+        body: { email, password },
+      });
+    } catch (error) {
+      if (error?.body?.code !== 'INVALID_EMAIL_OR_PASSWORD') throw error;
+
+      if (!resetPasswords) {
+        throw new Error(
+          `${email} has a different stored password. ` +
+            'Rerun with --reset-passwords to update local development credentials.',
+        );
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
+        const hashedPassword = await hashPassword(password);
+        const updated = await client.query(
+          `UPDATE "account"
+           SET "password" = $1, "updatedAt" = CURRENT_TIMESTAMP
+           WHERE "userId" = $2 AND "providerId" = 'credential'
+           RETURNING "id"`,
+          [hashedPassword, existing.rows[0].id],
+        );
+
+        if (updated.rowCount !== 1) {
+          throw new Error(`Expected one credential account for ${email}`);
+        }
+
+        await client.query(
+          'DELETE FROM "session" WHERE "userId" = $1',
+          [existing.rows[0].id],
+        );
+
+        await client.query('COMMIT');
+      } catch (resetError) {
+        await client.query('ROLLBACK');
+        throw resetError;
+      } finally {
+        client.release();
+      }
+
+      await auth.api.signInEmail({
+        body: { email, password },
+      });
+    }
   }
 
   const result = await pool.query(
