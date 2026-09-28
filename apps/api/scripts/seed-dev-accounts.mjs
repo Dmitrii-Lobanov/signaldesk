@@ -22,11 +22,24 @@ const viewerPassword = required('DEV_VIEWER_PASSWORD');
 
 const database = new URL(databaseUrl);
 
-if (
-  !['localhost', '127.0.0.1'].includes(database.hostname) ||
-  database.pathname !== '/signaldesk'
-) {
-  throw new Error('This script runs only against the local signaldesk database');
+const protectedDeploy = process.argv.includes('--protected-deploy');
+
+const localDatabase =
+  ['localhost', '127.0.0.1'].includes(database.hostname) &&
+  database.pathname === '/signaldesk';
+const deploymentDatabase =
+
+  protectedDeploy &&
+  process.env.NODE_ENV === 'production' &&
+  database.hostname === 'postgres' &&
+  database.pathname === '/signaldesk';
+
+if (!localDatabase && !deploymentDatabase) {
+  throw new Error('Account setup requires the local or protected development database');
+}
+
+if (protectedDeploy && resetPasswords) {
+  throw new Error('Password reset is not available during deployment setup');
 }
 
 if (editorEmail === viewerEmail) {

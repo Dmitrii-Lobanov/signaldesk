@@ -19,16 +19,38 @@ services:
     restart: unless-stopped
 
   api:
+    image: signaldesk-api:local
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set BETTER_AUTH_URL}
       PORT: "3001"
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+
+  account-setup:
+    profiles: ["setup"]
+    image: signaldesk-api:local
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set BETTER_AUTH_URL}
+      DEV_EDITOR_EMAIL: ${DEV_EDITOR_EMAIL:?Set DEV_EDITOR_EMAIL}
+      DEV_EDITOR_PASSWORD: ${DEV_EDITOR_PASSWORD:?Set DEV_EDITOR_PASSWORD}
+      DEV_VIEWER_EMAIL: ${DEV_VIEWER_EMAIL:?Set DEV_VIEWER_EMAIL}
+      DEV_VIEWER_PASSWORD: ${DEV_VIEWER_PASSWORD:?Set DEV_VIEWER_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - node
+      - apps/api/scripts/seed-dev-accounts.mjs
+      - --protected-deploy
 
   web:
     build:

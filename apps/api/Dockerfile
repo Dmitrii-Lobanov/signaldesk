@@ -9,6 +9,7 @@ RUN npm ci
 
 COPY apps/api/nest-cli.json apps/api/tsconfig.json apps/api/tsconfig.build.json apps/api/
 COPY apps/api/src apps/api/src
+COPY apps/api/scripts apps/api/scripts
 RUN npm run build --workspace=apps/api
 
 ENV NODE_ENV=production
