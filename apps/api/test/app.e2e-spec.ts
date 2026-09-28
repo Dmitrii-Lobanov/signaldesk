@@ -20,7 +20,8 @@ describe('Feedback API (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = module.createNestApplication();
+    app = module.createNestApplication({ bodyParser: false });
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
