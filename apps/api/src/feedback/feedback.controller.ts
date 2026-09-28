@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -13,20 +14,27 @@ import {
 import { FeedbackService } from './feedback.service.js';
 
 @ApiTags('feedback')
-@Controller('feedback')
+@Controller('workspaces/:workspaceId/feedback')
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
   @Get()
   @ApiOkResponse({ type: FeedbackResponseDto, isArray: true })
-  list() {
-    return this.feedbackService.list();
+  list(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Session() session: UserSession,
+  ) {
+    return this.feedbackService.list(workspaceId, session.user.id);
   }
 
   @Post()
   @ApiCreatedResponse({ type: FeedbackResponseDto })
   @ApiBadRequestResponse({ type: ValidationErrorResponseDto })
-  create(@Body() dto: CreateFeedbackDto) {
-    return this.feedbackService.create(dto);
+  create(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Session() session: UserSession,
+    @Body() dto: CreateFeedbackDto,
+  ) {
+    return this.feedbackService.create(workspaceId, session.user.id, dto);
   }
 }

@@ -1,29 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Feedback } from './feedback.entity.js';
+import { WorkspaceMembership } from '../workspaces/workspace-membership.entity.js';
 import { CreateFeedbackDto } from './create-feedback.dto.js';
-
-const DEMO_WORKSPACE_ID = '11111111-1111-4111-8111-111111111111';
+import { Feedback } from './feedback.entity.js';
 
 @Injectable()
 export class FeedbackService {
   constructor(
     @InjectRepository(Feedback)
     private readonly feedbackRepository: Repository<Feedback>,
+    @InjectRepository(WorkspaceMembership)
+    private readonly membershipRepository: Repository<WorkspaceMembership>,
   ) {}
 
-  list(): Promise<Feedback[]> {
+  private async requireMembership(
+    workspaceId: string,
+    userId: string,
+    requiredRole: 'editor' | 'viewer',
+  ): Promise<void> {
+    const membership = await this.membershipRepository.findOneBy({
+      workspaceId,
+      userId,
+    });
+
+    if (!membership || (requiredRole === 'editor' && membership.role !== 'editor')) {
+      throw new ForbiddenException('Workspace access denied');
+    }
+  }
+
+  async list(workspaceId: string, userId: string): Promise<Feedback[]> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+
     return this.feedbackRepository.find({
-      where: { workspaceId: DEMO_WORKSPACE_ID },
+      where: { workspaceId },
       order: { createdAt: 'DESC', id: 'DESC' },
       take: 50,
     });
   }
 
-  create(dto: CreateFeedbackDto): Promise<Feedback> {
+  async create(
+    workspaceId: string,
+    userId: string,
+    dto: CreateFeedbackDto,
+  ): Promise<Feedback> {
+    await this.requireMembership(workspaceId, userId, 'editor');
+
     return this.feedbackRepository.save({
-      workspaceId: DEMO_WORKSPACE_ID,
+      workspaceId,
       content: dto.content.trim(),
     });
   }
