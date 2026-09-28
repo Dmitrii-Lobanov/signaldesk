@@ -71,10 +71,10 @@ describe('Feedback API (e2e)', () => {
       'INSERT INTO workspaces (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING',
       [workspaceId, 'E2E workspace'],
     );
-    await database.query(
-      'INSERT INTO workspaces (id, name) VALUES ($1, $2)',
-      [otherWorkspaceId, 'Other E2E workspace'],
-    );
+    await database.query('INSERT INTO workspaces (id, name) VALUES ($1, $2)', [
+      otherWorkspaceId,
+      'Other E2E workspace',
+    ]);
 
     // Only this test fixture can create users. The application still has
     // public sign-up disabled.
@@ -133,10 +133,10 @@ describe('Feedback API (e2e)', () => {
       await database.query('DELETE FROM feedback WHERE content = $1', [
         content,
       ]);
-      await database.query(
-        'DELETE FROM "user" WHERE "email" IN ($1, $2)',
-        [editorEmail, viewerEmail],
-      );
+      await database.query('DELETE FROM "user" WHERE "email" IN ($1, $2)', [
+        editorEmail,
+        viewerEmail,
+      ]);
       await database.query('DELETE FROM workspaces WHERE id = $1', [
         otherWorkspaceId,
       ]);

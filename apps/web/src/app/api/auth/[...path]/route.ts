@@ -34,7 +34,7 @@ async function forwardAuth(
     const responseHeaders = new Headers();
     for (const name of ["content-type", "cache-control", "location"]) {
       const value = upstream.headers.get(name);
-      
+
       if (value) responseHeaders.set(name, value);
     }
 

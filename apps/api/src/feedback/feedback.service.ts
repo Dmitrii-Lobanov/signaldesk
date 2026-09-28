@@ -24,7 +24,10 @@ export class FeedbackService {
       userId,
     });
 
-    if (!membership || (requiredRole === 'editor' && membership.role !== 'editor')) {
+    if (
+      !membership ||
+      (requiredRole === 'editor' && membership.role !== 'editor')
+    ) {
       throw new ForbiddenException('Workspace access denied');
     }
   }

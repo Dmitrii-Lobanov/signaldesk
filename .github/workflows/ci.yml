@@ -59,6 +59,9 @@ jobs:
       - name: Lint web
         run: npm run lint --workspace=apps/web
 
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Test API units
         run: npm run test --workspace=apps/api
 

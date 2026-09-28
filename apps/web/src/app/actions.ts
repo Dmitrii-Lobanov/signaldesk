@@ -18,12 +18,15 @@ export async function createFeedback(
 
   const cookie = (await headers()).get("cookie") ?? "";
   if (!cookie) {
-    return { ok: false, message: "Your session expired. Please sign in again." };
+    return {
+      ok: false,
+      message: "Your session expired. Please sign in again.",
+    };
   }
 
   try {
     const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
-    
+
     const response = await fetch(
       `${apiBaseUrl}/workspaces/${workspaceId}/feedback`,
       {

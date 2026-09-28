@@ -47,7 +47,7 @@ export default async function Home() {
   }
 
   const user = (await userResponse.json()) as CurrentUser;
-  
+
   const membership = user.memberships.find(
     (item) => item.workspaceId === workspaceId,
   );
@@ -62,7 +62,7 @@ export default async function Home() {
     );
   }
 
-    let feedback: FeedbackItem[] = [];
+  let feedback: FeedbackItem[] = [];
   let loadFailed = false;
   let feedbackResponse: Response | undefined;
 

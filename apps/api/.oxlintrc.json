@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "rules": {
+    "eqeqeq": ["error", "always"],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "typescript/no-explicit-any": "off",
     "typescript/no-floating-promises": "error"
   },

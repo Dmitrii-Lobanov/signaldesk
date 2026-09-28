@@ -2,6 +2,13 @@
   "name": "signaldesk",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "format": "prettier --write \"apps/api/src/**/*.{ts,tsx}\" \"apps/api/test/**/*.{ts,tsx}\" \"apps/web/src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"apps/api/src/**/*.{ts,tsx}\" \"apps/api/test/**/*.{ts,tsx}\" \"apps/web/src/**/*.{ts,tsx,css}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  },
   "workspaces": [
     "apps/*"
   ]
