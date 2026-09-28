@@ -28,7 +28,6 @@ const localDatabase =
   ['localhost', '127.0.0.1'].includes(database.hostname) &&
   database.pathname === '/signaldesk';
 const deploymentDatabase =
-
   protectedDeploy &&
   process.env.NODE_ENV === 'production' &&
   database.hostname === 'postgres' &&

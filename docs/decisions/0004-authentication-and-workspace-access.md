@@ -1,6 +1,6 @@
 # ADR 0004: Authentication and workspace access
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-09-25
 
 ## Context

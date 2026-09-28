@@ -4,40 +4,48 @@
 
 SignalDesk is a portfolio project for demonstrating senior product-frontend judgment, end-to-end TypeScript ownership, and disciplined AI-assisted engineering. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
 
-> Status: Week 1 complete. Feedback capture and listing run locally and in a protected AWS EC2 development deployment; persistence after restart and CI have been verified.
+> Status: Week 2 authentication and workspace permissions work locally and pass CI. Verification of the updated protected EC2 deployment is still pending.
 
 ## Run locally
 
 Requirements: Node.js 24 and Docker.
 
-From the repository root, create `.env` from `.env.example` if you do not already have one. Keep `.env` out of Git.
+For initial setup, work from the repository root. Create `.env` from `.env.example` only if you do not already have one:
 
 ```sh
 cp .env.example .env
+```
+
+Before continuing, edit `.env`: set `BETTER_AUTH_SECRET` to a random secret of at least 32 characters and choose separate `DEV_EDITOR_PASSWORD` and `DEV_VIEWER_PASSWORD` values. Keep `.env` out of Git and never reuse these local credentials for the protected deployment. Then run:
+
+```sh
 npm ci
 docker compose up -d --wait postgres
 npm run build --workspace=apps/api
-node --env-file=.env node_modules/typeorm/cli.js migration:run -d apps/api/dist/data-source.js
+env -u DATABASE_URL node --env-file=.env node_modules/typeorm/cli.js migration:run -d apps/api/dist/data-source.js
 docker compose exec -T postgres psql -U signaldesk -d signaldesk < apps/api/db/seed.sql
+env -u DATABASE_URL -u BETTER_AUTH_SECRET -u BETTER_AUTH_URL -u DEV_EDITOR_EMAIL -u DEV_EDITOR_PASSWORD -u DEV_VIEWER_EMAIL -u DEV_VIEWER_PASSWORD node --env-file=.env apps/api/scripts/seed-dev-accounts.mjs
 ```
 
-Start the API in one terminal:
+For later starts, the database volume already contains the schema, feedback, and accounts. Start PostgreSQL with `docker compose up -d --wait postgres`; do not recreate `.env` or rerun the seeds. Rebuild the API after changing its source code.
+
+Start the API in one terminal from the repository root and leave it running:
 
 ```sh
-npm run start:dev --workspace=apps/api
+env -u DATABASE_URL -u BETTER_AUTH_SECRET -u BETTER_AUTH_URL node --env-file=.env apps/api/dist/main.js
 ```
 
-Start the web app in another:
+Start the web app in another terminal and leave it running:
 
 ```sh
-npm run dev --workspace=apps/web
+env -u API_BASE_URL npm run dev --workspace=apps/web
 ```
 
-Open `http://localhost:3000`. The web app uses `http://localhost:3001` for the API by default. Submit feedback and check that it appears in the list. API documentation is available at `http://localhost:3001/api`.
+Open `http://localhost:3000/sign-in`. Sign in with `DEV_EDITOR_EMAIL` and `DEV_EDITOR_PASSWORD` from `.env` to create feedback. Sign out, then use the viewer credentials to confirm the feedback is visible without a create form. The web app uses `http://localhost:3001` for the API by default. API documentation is available at `http://localhost:3001/api`.
 
 To verify persistence, stop **only the API** with Ctrl-C, start it again, and reload the web page. The feedback should still be there because PostgreSQL stores it in the Docker volume.
 
-For API integration tests, use the separate `signaldesk_test` database. Never point those tests at the development database.
+For API integration tests, use the separate `signaldesk_test` database. Never point those tests at the development database. To verify the protected EC2 deployment, follow [the deployment runbook](docs/DEPLOYMENT.md).
 
 ## The problem
 

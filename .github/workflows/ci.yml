@@ -53,9 +53,6 @@ jobs:
       - name: Type-check web
         run: ./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json
 
-      - name: Type-check web
-        run: ./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json
-
       - name: Lint API
         run: npm run lint --workspace=apps/api
 
