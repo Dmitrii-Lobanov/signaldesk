@@ -155,6 +155,32 @@ describe('Feedback API (e2e)', () => {
       .expect(401);
   });
 
+  it('rejects a session after sign-out', async () => {
+    const cookie = await signInAndGetCookie(editorEmail);
+
+    await request(app.getHttpServer())
+      .post('/api/auth/sign-out')
+      .set('Cookie', cookie)
+      .send({})
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .get('/me')
+      .set('Cookie', cookie)
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .get(feedbackUrl)
+      .set('Cookie', cookie)
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post(feedbackUrl)
+      .set('Cookie', cookie)
+      .send({ content: 'Revoked session must not write' })
+      .expect(401);
+  });
+
   it('identifies the signed-in editor', async () => {
     const response = await request(app.getHttpServer())
       .get('/me')
