@@ -10,8 +10,11 @@ import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateFeedbackDto } from './create-feedback.dto.js';
 import {
@@ -32,6 +35,24 @@ export class FeedbackController {
     @Session() session: UserSession,
   ) {
     return this.feedbackService.list(workspaceId, session.user.id);
+  }
+
+  @Get(':feedbackId')
+  @ApiOkResponse({ type: FeedbackResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid UUID' })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Workspace access denied' })
+  @ApiNotFoundResponse({ description: 'Feedback not found' })
+  detail(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,
+    @Session() session: UserSession,
+  ) {
+    return this.feedbackService.detail(
+      workspaceId,
+      session.user.id,
+      feedbackId,
+    );
   }
 
   @Post()

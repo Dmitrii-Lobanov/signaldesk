@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkspaceMembership } from '../workspaces/workspace-membership.entity.js';
@@ -40,6 +44,25 @@ export class FeedbackService {
       order: { createdAt: 'DESC', id: 'DESC' },
       take: 50,
     });
+  }
+
+  async detail(
+    workspaceId: string,
+    userId: string,
+    feedbackId: string,
+  ): Promise<Feedback> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+
+    const feedback = await this.feedbackRepository.findOneBy({
+      id: feedbackId,
+      workspaceId,
+    });
+
+    if (!feedback) {
+      throw new NotFoundException('Feedback not found');
+    }
+
+    return feedback;
   }
 
   async create(

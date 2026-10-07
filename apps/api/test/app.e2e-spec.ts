@@ -263,6 +263,75 @@ describe('Feedback API (e2e)', () => {
     expect(rows[0].count).toBe('0');
   });
 
+  it('lets editors and viewers read feedback detail', async () => {
+    const created = await request(app.getHttpServer())
+      .post(feedbackUrl)
+      .set('Cookie', editorCookie)
+      .send({ content })
+      .expect(201);
+
+    for (const cookie of [editorCookie, viewerCookie]) {
+      const response = await request(app.getHttpServer())
+        .get(`${feedbackUrl}/${created.body.id}`)
+        .set('Cookie', cookie)
+        .expect(200);
+
+      expect(response.body).toEqual(created.body);
+    }
+  });
+
+  it('rejects anonymous detail requests', async () => {
+    await request(app.getHttpServer())
+      .get(`${feedbackUrl}/${randomUUID()}`)
+      .expect(401);
+  });
+
+  it('returns 404 for missing feedback and 400 for an invalid ID', async () => {
+    await request(app.getHttpServer())
+      .get(`${feedbackUrl}/${randomUUID()}`)
+      .set('Cookie', editorCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get(`${feedbackUrl}/not-a-uuid`)
+      .set('Cookie', editorCookie)
+      .expect(400);
+  });
+
+  it('rejects detail access through another workspace URL', async () => {
+    const created = await request(app.getHttpServer())
+      .post(feedbackUrl)
+      .set('Cookie', editorCookie)
+      .send({ content })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .get(`${otherFeedbackUrl}/${created.body.id}`)
+      .set('Cookie', editorCookie)
+      .expect(403);
+  });
+
+  it('does not expose foreign feedback through an authorized workspace URL', async () => {
+    const foreignId = randomUUID();
+
+    await database.query(
+      `INSERT INTO feedback (id, workspace_id, content)
+       VALUES ($1, $2, $3)`,
+      [foreignId, otherWorkspaceId, content],
+    );
+
+    try {
+      for (const cookie of [editorCookie, viewerCookie]) {
+        await request(app.getHttpServer())
+          .get(`${feedbackUrl}/${foreignId}`)
+          .set('Cookie', cookie)
+          .expect(404);
+      }
+    } finally {
+      await database.query('DELETE FROM feedback WHERE id = $1', [foreignId]);
+    }
+  });
+
   it('rejects whitespace-only feedback without saving it', async () => {
     const before = await database.query('SELECT count(*) FROM feedback');
 
