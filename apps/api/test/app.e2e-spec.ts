@@ -195,6 +195,110 @@ describe('Feedback API (e2e)', () => {
     );
   });
 
+  it('lists only this workspace’s product areas and tags for editors and viewers', async () => {
+    const ownAreaId = randomUUID();
+    const foreignAreaId = randomUUID();
+    const ownTagId = randomUUID();
+    const foreignTagId = randomUUID();
+
+    await database.query(
+      `INSERT INTO product_areas (id, workspace_id, name)
+       VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [
+        ownAreaId,
+        workspaceId,
+        'E2E navigation',
+        foreignAreaId,
+        otherWorkspaceId,
+        'E2E foreign navigation',
+      ],
+    );
+
+    await database.query(
+      `INSERT INTO tags (id, workspace_id, name)
+       VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [
+        ownTagId,
+        workspaceId,
+        'E2E usability',
+        foreignTagId,
+        otherWorkspaceId,
+        'E2E foreign usability',
+      ],
+    );
+
+    try {
+      for (const cookie of [editorCookie, viewerCookie]) {
+        const areas = await request(app.getHttpServer())
+          .get(`/workspaces/${workspaceId}/product-areas`)
+          .set('Cookie', cookie)
+          .expect(200);
+
+        expect(areas.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: ownAreaId,
+              workspaceId,
+              name: 'E2E navigation',
+            }),
+          ]),
+        );
+        expect(areas.body).not.toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: foreignAreaId }),
+          ]),
+        );
+
+        const tags = await request(app.getHttpServer())
+          .get(`/workspaces/${workspaceId}/tags`)
+          .set('Cookie', cookie)
+          .expect(200);
+
+        expect(tags.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: ownTagId,
+              workspaceId,
+              name: 'E2E usability',
+            }),
+          ]),
+        );
+        expect(tags.body).not.toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: foreignTagId }),
+          ]),
+        );
+
+        await request(app.getHttpServer())
+          .get(`/workspaces/${otherWorkspaceId}/product-areas`)
+          .set('Cookie', cookie)
+          .expect(403);
+
+        await request(app.getHttpServer())
+          .get(`/workspaces/${otherWorkspaceId}/tags`)
+          .set('Cookie', cookie)
+          .expect(403);
+      }
+
+      await request(app.getHttpServer())
+        .get(`/workspaces/${workspaceId}/product-areas`)
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .get(`/workspaces/${workspaceId}/tags`)
+        .expect(401);
+    } finally {
+      await database.query('DELETE FROM tags WHERE id IN ($1, $2)', [
+        ownTagId,
+        foreignTagId,
+      ]);
+      await database.query('DELETE FROM product_areas WHERE id IN ($1, $2)', [
+        ownAreaId,
+        foreignAreaId,
+      ]);
+    }
+  });
+
   it('lets an editor create and list feedback', async () => {
     const created = await request(app.getHttpServer())
       .post(feedbackUrl)

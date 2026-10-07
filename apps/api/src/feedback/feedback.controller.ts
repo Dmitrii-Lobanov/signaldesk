@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
@@ -17,6 +18,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateFeedbackDto } from './create-feedback.dto.js';
+import { FeedbackClassificationResponseDto } from './feedback-classification-response.dto.js';
+import { UpdateFeedbackClassificationDto } from './update-feedback-classification.dto.js';
 import {
   FeedbackResponseDto,
   ValidationErrorResponseDto,
@@ -52,6 +55,43 @@ export class FeedbackController {
       workspaceId,
       session.user.id,
       feedbackId,
+    );
+  }
+
+  @Get(':feedbackId/classification')
+  @ApiOkResponse({ type: FeedbackClassificationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Workspace access denied' })
+  @ApiNotFoundResponse({ description: 'Feedback not found' })
+  getClassification(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,
+    @Session() session: UserSession,
+  ) {
+    return this.feedbackService.getClassification(
+      workspaceId,
+      session.user.id,
+      feedbackId,
+    );
+  }
+
+  @Patch(':feedbackId/classification')
+  @ApiOkResponse({ type: FeedbackClassificationResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid classification input' })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Editor access required' })
+  @ApiNotFoundResponse({ description: 'Feedback, area, or tag not found' })
+  updateClassification(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,
+    @Session() session: UserSession,
+    @Body() dto: UpdateFeedbackClassificationDto,
+  ) {
+    return this.feedbackService.updateClassification(
+      workspaceId,
+      session.user.id,
+      feedbackId,
+      dto,
     );
   }
 
