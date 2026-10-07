@@ -7,6 +7,7 @@ import { SignOutButton } from "./sign-out-button";
 import styles from "./page.module.css";
 import { InboxHeader } from "./feedback/components/inbox-header";
 import { InboxPanel } from "./feedback/components/inbox-panel";
+import { inboxUrl } from "./feedback/components/inbox-url";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
@@ -27,21 +28,6 @@ type InboxParams = {
 
 function first(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
-}
-
-function inboxUrl(
-  filters: { q: string; area: string; tag: string },
-  cursors: string[] = [],
-): string {
-  const params = new URLSearchParams();
-
-  if (filters.q) params.set("q", filters.q);
-  if (filters.area) params.set("area", filters.area);
-  if (filters.tag) params.set("tag", filters.tag);
-  for (const cursor of cursors) params.append("cursor", cursor);
-
-  const query = params.toString();
-  return query ? `/?${query}` : "/";
 }
 
 export default async function Home({
