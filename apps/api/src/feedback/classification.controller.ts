@@ -6,7 +6,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ClassificationOptionResponseDto } from './classification-option-response.dto.js';
+import { ClassificationOptionResponseDto } from './dto/classification-option-response.dto.js';
 import { FeedbackService } from './feedback.service.js';
 
 @ApiTags('classification')

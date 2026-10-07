@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Workspace } from '../workspaces/workspace.entity.js';
+import { Workspace } from '../../workspaces/workspace.entity.js';
 
 @Entity({ name: 'feedback' })
 export class Feedback {

@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { Feedback } from './feedback/feedback.entity.js';
 import { Workspace } from './workspaces/workspace.entity.js';
 import { fileURLToPath } from 'node:url';
-import { ProductArea } from './feedback/product-area.entity.js';
-import { Tag } from './feedback/tag.entity.js';
+import { ProductArea } from './feedback/entity/product-area.entity.js';
+import { Tag } from './feedback/entity/tag.entity.js';
+import { Feedback } from './feedback/entity/feedback.entity.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 

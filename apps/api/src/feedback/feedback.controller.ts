@@ -6,6 +6,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
@@ -17,14 +18,16 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateFeedbackDto } from './create-feedback.dto.js';
-import { FeedbackClassificationResponseDto } from './feedback-classification-response.dto.js';
-import { UpdateFeedbackClassificationDto } from './update-feedback-classification.dto.js';
+import { CreateFeedbackDto } from './dto/create-feedback.dto.js';
+import { FeedbackClassificationResponseDto } from './dto/feedback-classification-response.dto.js';
+import { UpdateFeedbackClassificationDto } from './dto/update-feedback-classification.dto.js';
 import {
   FeedbackResponseDto,
   ValidationErrorResponseDto,
-} from './feedback-response.dto.js';
+} from './dto/feedback-response.dto.js';
 import { FeedbackService } from './feedback.service.js';
+import { FeedbackPageResponseDto } from './dto/feedback-page-response.dto.js';
+import { ListFeedbackQueryDto } from './dto/list-feedback-query.dto.js';
 
 @ApiTags('feedback')
 @Controller('workspaces/:workspaceId/feedback')
@@ -38,6 +41,19 @@ export class FeedbackController {
     @Session() session: UserSession,
   ) {
     return this.feedbackService.list(workspaceId, session.user.id);
+  }
+
+  @Get('page')
+  @ApiOkResponse({ type: FeedbackPageResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid filter or cursor' })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Workspace access denied' })
+  page(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Session() session: UserSession,
+    @Query() query: ListFeedbackQueryDto,
+  ) {
+    return this.feedbackService.page(workspaceId, session.user.id, query);
   }
 
   @Get(':feedbackId')

@@ -2,16 +2,20 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { WorkspaceMembership } from '../workspaces/workspace-membership.entity.js';
-import { CreateFeedbackDto } from './create-feedback.dto.js';
-import { Feedback } from './feedback.entity.js';
-import { FeedbackClassificationResponseDto } from './feedback-classification-response.dto.js';
-import { UpdateFeedbackClassificationDto } from './update-feedback-classification.dto.js';
-import { ProductArea } from './product-area.entity.js';
-import { Tag } from './tag.entity.js';
+import { CreateFeedbackDto } from './dto/create-feedback.dto.js';
+import { FeedbackClassificationResponseDto } from './dto/feedback-classification-response.dto.js';
+import { UpdateFeedbackClassificationDto } from './dto/update-feedback-classification.dto.js';
+import { ProductArea } from './entity/product-area.entity.js';
+import { Tag } from './entity/tag.entity.js';
+import { FeedbackPageResponseDto } from './dto/feedback-page-response.dto.js';
+import { ListFeedbackQueryDto } from './dto/list-feedback-query.dto.js';
+import { FeedbackResponseDto } from './dto/feedback-response.dto.js';
+import { Feedback } from './entity/feedback.entity.js';
 
 @Injectable()
 export class FeedbackService {
@@ -64,6 +68,116 @@ export class FeedbackService {
       where: { workspaceId },
       order: { name: 'ASC', id: 'ASC' },
     });
+  }
+
+  async page(
+    workspaceId: string,
+    userId: string,
+    query: ListFeedbackQueryDto,
+  ): Promise<FeedbackPageResponseDto> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+
+    const limit = query.limit ?? 20;
+    const values: unknown[] = [workspaceId];
+    const conditions = ['f.workspace_id = $1'];
+
+    if (query.q?.trim()) {
+      values.push(query.q.trim());
+      conditions.push(`strpos(lower(f.content), lower($${values.length})) > 0`);
+    }
+
+    if (query.productAreaId) {
+      values.push(query.productAreaId);
+      conditions.push(`f.product_area_id = $${values.length}`);
+    }
+
+    if (query.tagId) {
+      values.push(query.tagId);
+      conditions.push(`
+        EXISTS (
+          SELECT 1
+          FROM feedback_tags ft
+          WHERE ft.workspace_id = f.workspace_id
+            AND ft.feedback_id = f.id
+            AND ft.tag_id = $${values.length}
+        )
+      `);
+    }
+
+    if (query.cursor) {
+      let decoded: unknown;
+
+      try {
+        decoded = JSON.parse(
+          Buffer.from(query.cursor, 'base64url').toString('utf8'),
+        );
+      } catch {
+        throw new BadRequestException('Invalid cursor');
+      }
+
+      if (
+        typeof decoded !== 'object' ||
+        decoded === null ||
+        !('at' in decoded) ||
+        !('id' in decoded) ||
+        typeof decoded.at !== 'string' ||
+        typeof decoded.id !== 'string' ||
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/.test(decoded.at) ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          decoded.id,
+        )
+      ) {
+        throw new BadRequestException('Invalid cursor');
+      }
+
+      values.push(decoded.at, decoded.id);
+      conditions.push(
+        `(f.created_at, f.id) < ($${values.length - 1}::timestamptz, $${values.length}::uuid)`,
+      );
+    }
+
+    values.push(limit + 1);
+
+    type PageRow = FeedbackResponseDto & {
+      cursorCreatedAt: string;
+    };
+
+    const rows = (await this.dataSource.query(
+      `
+        SELECT
+          f.id,
+          f.workspace_id AS "workspaceId",
+          f.source,
+          f.content,
+          f.occurred_at AS "occurredAt",
+          f.created_at AS "createdAt",
+          to_char(
+            f.created_at AT TIME ZONE 'UTC',
+            'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'
+          ) AS "cursorCreatedAt"
+        FROM feedback f
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY f.created_at DESC, f.id DESC
+        LIMIT $${values.length}
+      `,
+      values,
+    )) as PageRow[];
+
+    const pageRows = rows.slice(0, limit);
+    const items = pageRows.map(({ cursorCreatedAt: _cursor, ...item }) => item);
+    const last = pageRows.at(-1);
+
+    const nextCursor =
+      rows.length > limit && last
+        ? Buffer.from(
+            JSON.stringify({
+              at: last.cursorCreatedAt,
+              id: last.id,
+            }),
+          ).toString('base64url')
+        : null;
+
+    return { items, nextCursor };
   }
 
   async list(workspaceId: string, userId: string): Promise<Feedback[]> {

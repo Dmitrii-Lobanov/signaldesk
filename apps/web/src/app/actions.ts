@@ -75,7 +75,7 @@ export async function saveFeedbackClassification(
 
   try {
     const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
-    
+
     const response = await fetch(
       `${apiBaseUrl}/workspaces/${workspaceId}/feedback/${encodeURIComponent(feedbackId)}/classification`,
       {
