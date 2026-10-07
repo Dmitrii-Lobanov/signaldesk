@@ -4,14 +4,9 @@ import { FeedbackForm } from "./feedback-form";
 import { SignOutButton } from "./sign-out-button";
 import styles from "./page.module.css";
 import Link from "next/link";
+import type { FeedbackItem } from "../api/feedback";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
-
-type FeedbackItem = {
-  id: string;
-  content: string;
-  createdAt: string;
-};
 
 type CurrentUser = {
   id: string;
@@ -108,7 +103,9 @@ export default async function Home() {
           ) : (
             <ul className={styles.list}>
               {feedback.map((item) => (
-                <li key={item.id}>{item.content}</li>
+                <li key={item.id}>
+                  <Link href={`/feedback/${item.id}`}>{item.content}</Link>
+                </li>
               ))}
             </ul>
           )}
