@@ -1,10 +1,17 @@
 .page {
   min-height: 100vh;
-  padding: clamp(1.5rem, 5vw, 3rem) 1.5rem;
+  padding: clamp(1rem, 4vw, 3rem);
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(69, 107, 179, 0.12),
+      transparent 35%
+    ),
+    var(--background);
 }
 
 .main {
-  width: min(100%, 720px);
+  width: min(100%, 1040px);
   margin-inline: auto;
   display: grid;
   align-content: start;
@@ -16,33 +23,186 @@
   min-width: 0;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding-block: 0.5rem 0.75rem;
+}
+
+.header h1 {
+  margin-bottom: 0.35rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.intro,
+.account,
+.resultCount,
+.feedbackMeta {
+  color: var(--muted);
+}
+
+.intro {
+  margin: 0;
+}
+
+.account {
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.panel {
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeading h2,
+.panel > h2 {
+  margin-bottom: 1.25rem;
+  font-size: 1.35rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.searchField,
+.filterField {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.filters label,
+.form label {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.filters input,
+.filters select,
+.form :is(input, textarea, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  background: var(--surface);
+  font: inherit;
+}
+
 .form {
   display: grid;
   gap: 0.75rem;
-}
-
-.form :is(input, textarea) {
-  width: 100%;
-  min-width: 0;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--foreground);
-  background: var(--surface);
 }
 
 .form textarea {
   resize: vertical;
 }
 
+.filterActions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.quietLink {
+  font-size: 0.9rem;
+}
+
+.resultCount {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 0.875rem;
+}
+
 .list {
   display: grid;
-  gap: 0.75rem;
-  padding-left: 1.5rem;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .list li {
+  min-width: 0;
+}
+
+.feedbackLink {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.feedbackLink:hover {
+  border-color: var(--link);
+  transform: translateY(-1px);
+}
+
+.feedbackText {
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.feedbackMeta {
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.message,
+.emptyState {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+}
+
+.emptyState h3 {
+  margin: 0 0 0.35rem;
+}
+
+.emptyState p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .feedbackContent {
@@ -58,17 +218,6 @@
 .main dd {
   margin: 0 0 0.75rem;
   color: var(--muted);
-}
-
-.form select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--foreground);
-  background: var(--surface);
-  font: inherit;
 }
 
 .tagChoices {
@@ -92,36 +241,43 @@
   height: 18px;
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 :where(select):focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 
-.filters {
-  display: grid;
-  gap: 0.75rem;
+@media (max-width: 760px) {
+  .header {
+    display: grid;
+  }
+
+  .account {
+    justify-items: start;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
 }
 
-.filters > div {
-  display: grid;
-  gap: 0.25rem;
-}
+@media (prefers-reduced-motion: reduce) {
+  .feedbackLink {
+    transition: none;
+  }
 
-.filters input,
-.filters select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--foreground);
-  background: var(--surface);
-  font: inherit;
-}
-
-.pagination {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
+  .feedbackLink:hover {
+    transform: none;
+  }
 }

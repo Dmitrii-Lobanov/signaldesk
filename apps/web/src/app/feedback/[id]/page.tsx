@@ -13,10 +13,21 @@ const workspaceId = "11111111-1111-4111-8111-111111111111";
 
 export default async function FeedbackDetail({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string | string[] }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const requestedReturn = typeof from === "string" ? from : "/";
+  const backHref =
+    requestedReturn === "/" || requestedReturn.startsWith("/?")
+      ? requestedReturn
+      : "/";
+  const retryHref = `/feedback/${encodeURIComponent(id)}?${new URLSearchParams({
+    from: backHref,
+  })}`;
   const cookie = (await headers()).get("cookie") ?? "";
 
   if (!cookie) redirect("/sign-in");
@@ -38,7 +49,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Feedback</h1>
         <p role="alert">Couldn&apos;t reach SignalDesk. Try again.</p>
-        <Link href="/">Back to inbox</Link>
+        <Link href={backHref}>Back to inbox</Link>
       </main>
     );
   }
@@ -50,7 +61,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Access denied</h1>
         <p>You cannot view feedback in this workspace.</p>
-        <Link href="/">Back to inbox</Link>
+        <Link href={backHref}>Back to inbox</Link>
       </main>
     );
   }
@@ -60,7 +71,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Feedback not found</h1>
         <p>This feedback item is unavailable.</p>
-        <Link href="/">Back to inbox</Link>
+        <Link href={backHref}>Back to inbox</Link>
       </main>
     );
   }
@@ -70,8 +81,8 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Feedback</h1>
         <p role="alert">Couldn&apos;t load this feedback item.</p>
-        <Link href={`/feedback/${encodeURIComponent(id)}`}>Try again</Link>
-        <Link href="/">Back to inbox</Link>
+        <Link href={retryHref}>Try again</Link>
+        <Link href={backHref}>Back to inbox</Link>
       </main>
     );
   }
@@ -108,7 +119,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Feedback detail</h1>
         <p role="alert">Couldn&apos;t load classification. Try again.</p>
-        <Link href={`/feedback/${encodeURIComponent(id)}`}>Try again</Link>
+        <Link href={retryHref}>Try again</Link>
       </main>
     );
   }
@@ -130,7 +141,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Access denied</h1>
         <p>You cannot view classification in this workspace.</p>
-        <Link href="/">Back to inbox</Link>
+        <Link href={backHref}>Back to inbox</Link>
       </main>
     );
   }
@@ -145,7 +156,7 @@ export default async function FeedbackDetail({
       <main className={styles.main}>
         <h1>Feedback detail</h1>
         <p role="alert">Couldn&apos;t load classification. Try again.</p>
-        <Link href={`/feedback/${encodeURIComponent(id)}`}>Try again</Link>
+        <Link href={retryHref}>Try again</Link>
       </main>
     );
   }
@@ -176,7 +187,7 @@ export default async function FeedbackDetail({
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Link href="/">Back to inbox</Link>
+        <Link href={backHref}>Back to inbox</Link>
         <article aria-labelledby="feedback-title">
           <h1 id="feedback-title">Feedback detail</h1>
           <p className={styles.feedbackContent}>{feedback.content}</p>

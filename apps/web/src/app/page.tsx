@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { ClassificationOption, FeedbackPage } from "../api/feedback";
 import { FeedbackForm } from "./feedback-form";
 import { SignOutButton } from "./sign-out-button";
+import { InboxFilters } from "./inbox-filters";
 import styles from "./page.module.css";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
@@ -135,7 +136,8 @@ export default async function Home({
       <main className={styles.main}>
         <h1>SignalDesk</h1>
         <p role="alert">
-          Couldn&apos;t load the inbox. <Link href={inboxUrl(filters, cursors)}>Try again</Link>
+          Couldn&apos;t load the inbox.{" "}
+          <Link href={inboxUrl(filters, cursors)}>Try again</Link>
         </p>
       </main>
     );
@@ -162,8 +164,7 @@ export default async function Home({
     );
   }
 
-  const loadFailed =
-    !pageResponse.ok || !areasResponse.ok || !tagsResponse.ok;
+  const loadFailed = !pageResponse.ok || !areasResponse.ok || !tagsResponse.ok;
   const page = pageResponse.ok
     ? ((await pageResponse.json()) as FeedbackPage)
     : null;
@@ -175,77 +176,81 @@ export default async function Home({
     : [];
 
   const previousCursors = cursors.slice(0, -1);
-  const nextCursors = page?.nextCursor
-    ? [...cursors, page.nextCursor]
-    : [];
+  const nextCursors = page?.nextCursor ? [...cursors, page.nextCursor] : [];
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <h1>SignalDesk</h1>
-        <p>Signed in as {user.email}</p>
-        <SignOutButton />
+        <header className={styles.header}>
+          <div>
+            <p className={styles.eyebrow}>WORKSPACE INBOX</p>
+            <h1>Feedback</h1>
+            <p className={styles.intro}>
+              Find customer signals and turn them into organized evidence.
+            </p>
+          </div>
+          <div className={styles.account}>
+            <span>{user.email}</span>
+            <SignOutButton />
+          </div>
+        </header>
 
-        {membership.role === "editor" && <FeedbackForm />}
+        {membership.role === "editor" && (
+          <section className={styles.panel} aria-labelledby="capture-heading">
+            <h2 id="capture-heading">Capture feedback</h2>
+            <FeedbackForm />
+          </section>
+        )}
 
-        <section aria-labelledby="feedback-heading">
-          <h2 id="feedback-heading">Feedback</h2>
-
-          <form action="/" method="get" className={styles.filters}>
+        <section className={styles.panel} aria-labelledby="feedback-heading">
+          <div className={styles.sectionHeading}>
             <div>
-              <label htmlFor="feedback-search">Search feedback</label>
-              <input
-                id="feedback-search"
-                name="q"
-                type="search"
-                maxLength={200}
-                defaultValue={filters.q}
-              />
+              <p className={styles.eyebrow}>BROWSE</p>
+              <h2 id="feedback-heading">Inbox</h2>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="filter-area">Product area</label>
-              <select id="filter-area" name="area" defaultValue={filters.area}>
-                <option value="">All areas</option>
-                {areas.map((area) => (
-                  <option key={area.id} value={area.id}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="filter-tag">Tag</label>
-              <select id="filter-tag" name="tag" defaultValue={filters.tag}>
-                <option value="">All tags</option>
-                {tags.map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button type="submit">Apply filters</button>
-            <Link href="/">Clear filters</Link>
-          </form>
+          <InboxFilters
+            key={`${filters.q}|${filters.area}|${filters.tag}`}
+            filters={filters}
+            areas={areas}
+            tags={tags}
+          />
 
           {loadFailed ? (
-            <p role="alert">
+            <p role="alert" className={styles.message}>
               {pageResponse.status === 400
                 ? "These filters or this page link are invalid."
                 : "Couldn't load feedback."}{" "}
               <Link href={inboxUrl(filters)}>Try the first page</Link>
             </p>
           ) : page?.items.length === 0 ? (
-            <p role="status">No feedback matches these filters.</p>
+            <div className={styles.emptyState} role="status">
+              <h3>No matching feedback</h3>
+              <p>Try a different search or clear the filters.</p>
+            </div>
           ) : (
             <>
+              <p className={styles.resultCount} role="status">
+                Showing {page?.items.length ?? 0} feedback items
+              </p>
               <ul className={styles.list}>
                 {page?.items.map((item) => (
                   <li key={item.id}>
-                    <Link href={`/feedback/${item.id}`}>{item.content}</Link>
+                    <Link
+                      className={styles.feedbackLink}
+                      href={`/feedback/${item.id}?${new URLSearchParams({
+                        from: inboxUrl(filters, cursors),
+                      })}`}
+                    >
+                      <span className={styles.feedbackText}>
+                        {item.content}
+                      </span>
+                      <span className={styles.feedbackMeta}>
+                        {item.source} ·{" "}
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -253,11 +258,11 @@ export default async function Home({
               <nav aria-label="Feedback pages" className={styles.pagination}>
                 {cursors.length > 0 && (
                   <Link href={inboxUrl(filters, previousCursors)}>
-                    Previous page
+                    ← Previous page
                   </Link>
                 )}
                 {page?.nextCursor && (
-                  <Link href={inboxUrl(filters, nextCursors)}>Next page</Link>
+                  <Link href={inboxUrl(filters, nextCursors)}>Next page →</Link>
                 )}
               </nav>
             </>
