@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { FeedbackItem } from "../../../api/feedback";
+import type {
+  ClassificationOption,
+  FeedbackClassification,
+  FeedbackItem,
+} from "../../../api/feedback";
+import { ClassificationForm } from "./classification-form";
 import styles from "../../page.module.css";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
@@ -73,6 +78,101 @@ export default async function FeedbackDetail({
 
   const feedback = (await response.json()) as FeedbackItem;
 
+  let classificationResponse: Response;
+  let areasResponse: Response;
+  let tagsResponse: Response;
+  let userResponse: Response;
+
+  try {
+    [classificationResponse, areasResponse, tagsResponse, userResponse] =
+      await Promise.all([
+        fetch(
+          `${apiBaseUrl}/workspaces/${workspaceId}/feedback/${encodeURIComponent(id)}/classification`,
+          { headers: { Cookie: cookie }, cache: "no-store" },
+        ),
+        fetch(`${apiBaseUrl}/workspaces/${workspaceId}/product-areas`, {
+          headers: { Cookie: cookie },
+          cache: "no-store",
+        }),
+        fetch(`${apiBaseUrl}/workspaces/${workspaceId}/tags`, {
+          headers: { Cookie: cookie },
+          cache: "no-store",
+        }),
+        fetch(`${apiBaseUrl}/me`, {
+          headers: { Cookie: cookie },
+          cache: "no-store",
+        }),
+      ]);
+  } catch {
+    return (
+      <main className={styles.main}>
+        <h1>Feedback detail</h1>
+        <p role="alert">Couldn&apos;t load classification. Try again.</p>
+        <Link href={`/feedback/${encodeURIComponent(id)}`}>Try again</Link>
+      </main>
+    );
+  }
+
+  if (
+    [classificationResponse, areasResponse, tagsResponse, userResponse].some(
+      (item) => item.status === 401,
+    )
+  ) {
+    redirect("/sign-in");
+  }
+
+  if (
+    [classificationResponse, areasResponse, tagsResponse, userResponse].some(
+      (item) => item.status === 403,
+    )
+  ) {
+    return (
+      <main className={styles.main}>
+        <h1>Access denied</h1>
+        <p>You cannot view classification in this workspace.</p>
+        <Link href="/">Back to inbox</Link>
+      </main>
+    );
+  }
+
+  if (
+    !classificationResponse.ok ||
+    !areasResponse.ok ||
+    !tagsResponse.ok ||
+    !userResponse.ok
+  ) {
+    return (
+      <main className={styles.main}>
+        <h1>Feedback detail</h1>
+        <p role="alert">Couldn&apos;t load classification. Try again.</p>
+        <Link href={`/feedback/${encodeURIComponent(id)}`}>Try again</Link>
+      </main>
+    );
+  }
+
+  const classification =
+    (await classificationResponse.json()) as FeedbackClassification;
+  const areas = (await areasResponse.json()) as ClassificationOption[];
+  const tags = (await tagsResponse.json()) as ClassificationOption[];
+  const user = (await userResponse.json()) as {
+    memberships: Array<{
+      workspaceId: string;
+      role: "editor" | "viewer";
+    }>;
+  };
+
+  const isEditor = user.memberships.some(
+    (membership) =>
+      membership.workspaceId === workspaceId && membership.role === "editor",
+  );
+
+  const areaName =
+    areas.find((area) => area.id === classification.productAreaId)?.name ??
+    "None";
+  const tagNames = classification.tagIds.map(
+    (tagId) => tags.find((tag) => tag.id === tagId)?.name ?? "Unavailable tag",
+  );
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -89,6 +189,21 @@ export default async function FeedbackDetail({
             <dd>{new Date(feedback.createdAt).toLocaleString()}</dd>
           </dl>
         </article>
+
+        <section aria-labelledby="classification-heading">
+          <h2 id="classification-heading">Classification</h2>
+          <p>Product area: {areaName}</p>
+          <p>Tags: {tagNames.length > 0 ? tagNames.join(", ") : "None"}</p>
+        </section>
+
+        {isEditor && (
+          <ClassificationForm
+            feedbackId={id}
+            classification={classification}
+            areas={areas}
+            tags={tags}
+          />
+        )}
       </main>
     </div>
   );

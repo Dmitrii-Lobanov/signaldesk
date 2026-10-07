@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 
 export class UpdateFeedbackClassificationDto {
-  @ApiProperty({ format: 'uuid', nullable: true })
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
   @ValidateIf((_object, value: unknown) => value !== null)
   @IsUUID('4')
   productAreaId!: string | null;
