@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'product_areas' })
-export class ProductArea {
+@Entity({ name: 'tags' })
+export class Tag {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

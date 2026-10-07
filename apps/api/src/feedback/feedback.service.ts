@@ -8,6 +8,8 @@ import { Repository } from 'typeorm';
 import { WorkspaceMembership } from '../workspaces/workspace-membership.entity.js';
 import { CreateFeedbackDto } from './create-feedback.dto.js';
 import { Feedback } from './feedback.entity.js';
+import { ProductArea } from './product-area.entity.js';
+import { Tag } from './tag.entity.js';
 
 @Injectable()
 export class FeedbackService {
@@ -16,6 +18,10 @@ export class FeedbackService {
     private readonly feedbackRepository: Repository<Feedback>,
     @InjectRepository(WorkspaceMembership)
     private readonly membershipRepository: Repository<WorkspaceMembership>,
+    @InjectRepository(ProductArea)
+    private readonly productAreaRepository: Repository<ProductArea>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
   ) {}
 
   private async requireMembership(
@@ -34,6 +40,27 @@ export class FeedbackService {
     ) {
       throw new ForbiddenException('Workspace access denied');
     }
+  }
+
+  async listProductAreas(
+    workspaceId: string,
+    userId: string,
+  ): Promise<ProductArea[]> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+
+    return this.productAreaRepository.find({
+      where: { workspaceId },
+      order: { name: 'ASC', id: 'ASC' },
+    });
+  }
+
+  async listTags(workspaceId: string, userId: string): Promise<Tag[]> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+
+    return this.tagRepository.find({
+      where: { workspaceId },
+      order: { name: 'ASC', id: 'ASC' },
+    });
   }
 
   async list(workspaceId: string, userId: string): Promise<Feedback[]> {
