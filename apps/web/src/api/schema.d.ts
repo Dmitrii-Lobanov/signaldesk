@@ -81,7 +81,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    patch: operations["FeedbackController_edit"];
     trace?: never;
   };
   "/workspaces/{workspaceId}/feedback/{feedbackId}/classification": {
@@ -98,6 +98,22 @@ export interface paths {
     options?: never;
     head?: never;
     patch: operations["FeedbackController_updateClassification"];
+    trace?: never;
+  };
+  "/workspaces/{workspaceId}/feedback/{feedbackId}/history": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["FeedbackController_history"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/workspaces/{workspaceId}/product-areas": {
@@ -145,6 +161,8 @@ export interface components {
       source: string;
       /** @example Please add keyboard shortcuts. */
       content: string;
+      /** @example 1 */
+      version: number;
       /** Format: date-time */
       occurredAt: string;
       /** Format: date-time */
@@ -166,12 +184,41 @@ export interface components {
       productAreaId: string | null;
       tagIds: string[];
     };
+    AuditEventResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      feedbackId: string;
+      actorUserId: string;
+      actorEmail: string | null;
+      /** @enum {string} */
+      action: "feedback.created" | "feedback.edited" | "feedback.classified";
+      before: {
+        [key: string]: unknown;
+      } | null;
+      after: {
+        [key: string]: unknown;
+      };
+      /** Format: date-time */
+      createdAt: string;
+    };
+    EditFeedbackDto: {
+      /** @example Updated customer feedback */
+      content: string;
+      /** @example 1 */
+      expectedVersion: number;
+    };
     CreateFeedbackDto: {
       /**
        * @description Non-empty feedback text, up to 5000 characters
        * @example Please add keyboard shortcuts.
        */
       content: string;
+      /**
+       * Format: uuid
+       * @description Reuse this key when retrying the same create request
+       */
+      requestKey?: string;
     };
     ValidationErrorResponseDto: {
       /** @example 400 */
@@ -288,6 +335,13 @@ export interface operations {
           "application/json": components["schemas"]["ValidationErrorResponseDto"];
         };
       };
+      /** @description Request key was already used for different feedback */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
   };
   FeedbackController_page: {
@@ -390,6 +444,67 @@ export interface operations {
       };
     };
   };
+  FeedbackController_edit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        feedbackId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EditFeedbackDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FeedbackResponseDto"];
+        };
+      };
+      /** @description Invalid feedback edit */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Sign-in required */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Editor access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Feedback not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Feedback changed since it was loaded */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   FeedbackController_getClassification: {
     parameters: {
       query?: never;
@@ -479,6 +594,49 @@ export interface operations {
         content?: never;
       };
       /** @description Feedback, area, or tag not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  FeedbackController_history: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        workspaceId: string;
+        feedbackId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditEventResponseDto"][];
+        };
+      };
+      /** @description Sign-in required */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Workspace access denied */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Feedback not found */
       404: {
         headers: {
           [name: string]: unknown;

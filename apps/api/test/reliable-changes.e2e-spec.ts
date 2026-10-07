@@ -186,9 +186,7 @@ describe('Reliable feedback changes (e2e)', () => {
       .get(`${otherUrl}/history`)
       .set('Cookie', editorCookie)
       .expect(403);
-    await request(app.getHttpServer())
-      .get(`${ownUrl}/history`)
-      .expect(401);
+    await request(app.getHttpServer()).get(`${ownUrl}/history`).expect(401);
 
     const foreignId = randomUUID();
     await database.query(

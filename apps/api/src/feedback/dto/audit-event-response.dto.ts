@@ -10,7 +10,7 @@ export class AuditEventResponseDto {
   @ApiProperty()
   actorUserId!: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   actorEmail!: string | null;
 
   @ApiProperty({

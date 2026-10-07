@@ -2,11 +2,13 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type {
+  AuditEvent,
   ClassificationOption,
   FeedbackClassification,
   FeedbackItem,
 } from "../../../api/feedback";
 import { ClassificationForm } from "./classification-form";
+import { EditForm } from "./edit-form";
 import styles from "../../page.module.css";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
@@ -130,6 +132,12 @@ export default async function FeedbackDetail({
       fetchApi(apiBaseUrl, "/me", cookie),
     ]);
 
+  const historyResponse = await fetchApi(
+    apiBaseUrl,
+    `${feedbackPath}/history`,
+    cookie,
+  );
+
   const relatedResponses = [
     classificationResponse,
     areasResponse,
@@ -139,6 +147,16 @@ export default async function FeedbackDetail({
 
   if (relatedResponses.some((response) => response?.status === 401)) {
     redirect("/sign-in");
+  }
+
+  if (historyResponse?.status === 403) {
+    return (
+      <DetailState
+        title="Access denied"
+        message="You cannot view feedback history in this workspace."
+        backHref={backHref}
+      />
+    );
   }
 
   if (relatedResponses.some((response) => response?.status === 403)) {
@@ -179,6 +197,10 @@ export default async function FeedbackDetail({
     CurrentUser,
   ];
 
+  const history = historyResponse?.ok
+    ? ((await historyResponse.json()) as AuditEvent[])
+    : null;
+
   const isEditor = user.memberships.some(
     (membership) =>
       membership.workspaceId === workspaceId && membership.role === "editor",
@@ -212,6 +234,42 @@ export default async function FeedbackDetail({
           <h2 id="classification-heading">Classification</h2>
           <p>Product area: {areaName}</p>
           <p>Tags: {tagNames.length > 0 ? tagNames.join(", ") : "None"}</p>
+        </section>
+
+        {isEditor && (
+          <EditForm
+            feedbackId={id}
+            initialContent={feedback.content}
+            initialVersion={feedback.version}
+          />
+        )}
+
+        <section aria-labelledby="history-heading">
+          <h2 id="history-heading">Change history</h2>
+          {history === null ? (
+            <p role="alert">
+              Couldn’t load change history.{" "}
+              <Link href={retryHref}>Try again</Link>
+            </p>
+          ) : history.length === 0 ? (
+            <p>No recorded changes for this feedback item.</p>
+          ) : (
+            <ol>
+              {history.map((event) => (
+                <li key={event.id}>
+                  {event.action === "feedback.created"
+                    ? "Created"
+                    : event.action === "feedback.edited"
+                      ? "Edited"
+                      : "Classified"}{" "}
+                  by {event.actorEmail ?? event.actorUserId} on{" "}
+                  <time dateTime={event.createdAt}>
+                    {new Date(event.createdAt).toLocaleString()}
+                  </time>
+                </li>
+              ))}
+            </ol>
+          )}
         </section>
 
         {isEditor && (

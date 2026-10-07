@@ -12,3 +12,5 @@ export type UpdateFeedbackClassification =
   components["schemas"]["UpdateFeedbackClassificationDto"];
 
 export type FeedbackPage = components["schemas"]["FeedbackPageResponseDto"];
+
+export type AuditEvent = components["schemas"]["AuditEventResponseDto"];
