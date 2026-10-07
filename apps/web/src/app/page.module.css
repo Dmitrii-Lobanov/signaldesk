@@ -96,3 +96,32 @@
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
+
+.filters {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.filters > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.filters input,
+.filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  background: var(--surface);
+  font: inherit;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}

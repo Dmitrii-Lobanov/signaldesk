@@ -10,3 +10,5 @@ export type FeedbackClassification =
 
 export type UpdateFeedbackClassification =
   components["schemas"]["UpdateFeedbackClassificationDto"];
+
+export type FeedbackPage = components["schemas"]["FeedbackPageResponseDto"];
