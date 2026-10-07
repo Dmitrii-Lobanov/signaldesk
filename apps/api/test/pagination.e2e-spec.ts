@@ -57,7 +57,7 @@ describe('Feedback pagination API (e2e)', () => {
     let cursor: string | null = null;
 
     do {
-      const response = await request(app.getHttpServer())
+      const response: request.Response = await request(app.getHttpServer())
         .get(`${feedbackUrl}/page`)
         .set('Cookie', viewerCookie)
         .query({ q: marker, limit: 2, ...(cursor ? { cursor } : {}) })

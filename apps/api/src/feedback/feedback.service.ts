@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ConflictException,
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +17,8 @@ import { FeedbackPageResponseDto } from './dto/feedback-page-response.dto.js';
 import { ListFeedbackQueryDto } from './dto/list-feedback-query.dto.js';
 import { FeedbackResponseDto } from './dto/feedback-response.dto.js';
 import { Feedback } from './entity/feedback.entity.js';
+import { AuditEventResponseDto } from './dto/audit-event-response.dto.js';
+import { EditFeedbackDto } from './dto/edit-feedback.dto.js';
 
 @Injectable()
 export class FeedbackService {
@@ -149,6 +152,7 @@ export class FeedbackService {
           f.workspace_id AS "workspaceId",
           f.source,
           f.content,
+          f.version,
           f.occurred_at AS "occurredAt",
           f.created_at AS "createdAt",
           to_char(
@@ -278,6 +282,12 @@ export class FeedbackService {
         throw new NotFoundException('Feedback not found');
       }
 
+      const before = await this.readClassification(
+        manager,
+        workspaceId,
+        feedbackId,
+      );
+
       if (dto.productAreaId !== null) {
         const areaRows = (await manager.query(
           `
@@ -338,7 +348,145 @@ export class FeedbackService {
         );
       }
 
-      return this.readClassification(manager, workspaceId, feedbackId);
+      const after = await this.readClassification(
+        manager,
+        workspaceId,
+        feedbackId,
+      );
+
+      await manager.query(
+        `
+          UPDATE feedback
+          SET version = version + 1
+          WHERE workspace_id = $1 AND id = $2
+        `,
+        [workspaceId, feedbackId],
+      );
+
+      await this.writeAudit(
+        manager,
+        workspaceId,
+        feedbackId,
+        userId,
+        'feedback.classified',
+        { ...before },
+        { ...after },
+      );
+
+      return after;
+    });
+  }
+
+  private async writeAudit(
+    manager: EntityManager,
+    workspaceId: string,
+    feedbackId: string,
+    actorUserId: string,
+    action: 'feedback.created' | 'feedback.edited' | 'feedback.classified',
+    before: Record<string, unknown> | null,
+    after: Record<string, unknown>,
+  ): Promise<void> {
+    await manager.query(
+      `
+        INSERT INTO audit_events
+          (workspace_id, feedback_id, actor_user_id, action, "before", "after")
+        VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb)
+      `,
+      [
+        workspaceId,
+        feedbackId,
+        actorUserId,
+        action,
+        before === null ? null : JSON.stringify(before),
+        JSON.stringify(after),
+      ],
+    );
+  }
+
+  async history(
+    workspaceId: string,
+    userId: string,
+    feedbackId: string,
+  ): Promise<AuditEventResponseDto[]> {
+    await this.requireMembership(workspaceId, userId, 'viewer');
+    await this.detail(workspaceId, userId, feedbackId);
+
+    return (await this.dataSource.query(
+      `
+        SELECT
+          a.id,
+          a.feedback_id AS "feedbackId",
+          a.actor_user_id AS "actorUserId",
+          u.email AS "actorEmail",
+          a.action,
+          a."before",
+          a."after",
+          a.created_at AS "createdAt"
+        FROM audit_events a
+        LEFT JOIN "user" u ON u.id = a.actor_user_id
+        WHERE a.workspace_id = $1 AND a.feedback_id = $2
+        ORDER BY a.created_at DESC, a.id DESC
+      `,
+      [workspaceId, feedbackId],
+    )) as AuditEventResponseDto[];
+  }
+
+  async edit(
+    workspaceId: string,
+    userId: string,
+    feedbackId: string,
+    dto: EditFeedbackDto,
+  ): Promise<Feedback> {
+    await this.requireMembership(workspaceId, userId, 'editor');
+    const content = dto.content.trim();
+
+    return this.dataSource.transaction(async (manager) => {
+      const rows = (await manager.query(
+        `
+          SELECT content, version
+          FROM feedback
+          WHERE workspace_id = $1 AND id = $2
+          FOR UPDATE
+        `,
+        [workspaceId, feedbackId],
+      )) as Array<{ content: string; version: number }>;
+
+      const current = rows[0];
+      if (!current) throw new NotFoundException('Feedback not found');
+      if (current.version !== dto.expectedVersion) {
+        throw new ConflictException('Feedback changed since it was loaded');
+      }
+
+      if (current.content === content) {
+        return manager.getRepository(Feedback).findOneByOrFail({
+          workspaceId,
+          id: feedbackId,
+        });
+      }
+
+      await manager.query(
+        `
+          UPDATE feedback
+          SET content = $3, version = version + 1
+          WHERE workspace_id = $1 AND id = $2
+        `,
+        [workspaceId, feedbackId, content],
+      );
+
+      await this.writeAudit(
+        manager,
+        workspaceId,
+        feedbackId,
+        userId,
+        'feedback.edited',
+        { content: current.content, version: current.version },
+        { content, version: current.version + 1 },
+      );
+
+      return manager.getRepository(Feedback).findOneByOrFail({
+        workspaceId,
+        id: feedbackId,
+      });
     });
   }
 
@@ -348,10 +496,58 @@ export class FeedbackService {
     dto: CreateFeedbackDto,
   ): Promise<Feedback> {
     await this.requireMembership(workspaceId, userId, 'editor');
+    const content = dto.content.trim();
 
-    return this.feedbackRepository.save({
-      workspaceId,
-      content: dto.content.trim(),
+    return this.dataSource.transaction(async (manager) => {
+      const inserted = (await manager.query(
+        `
+          INSERT INTO feedback
+            (workspace_id, content, create_request_key, create_request_user_id)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT
+            (workspace_id, create_request_user_id, create_request_key)
+            WHERE create_request_key IS NOT NULL
+          DO NOTHING
+          RETURNING id
+        `,
+        [
+          workspaceId,
+          content,
+          dto.requestKey ?? null,
+          dto.requestKey ? userId : null,
+        ],
+      )) as Array<{ id: string }>;
+
+      if (!inserted[0]) {
+        const existing = await manager.getRepository(Feedback).findOneBy({
+          workspaceId,
+          createRequestUserId: userId,
+          createRequestKey: dto.requestKey,
+        });
+        if (!existing || existing.content !== content) {
+          throw new ConflictException(
+            'Request key was already used for different feedback',
+          );
+        }
+        return existing;
+      }
+
+      const feedback = await manager.getRepository(Feedback).findOneByOrFail({
+        workspaceId,
+        id: inserted[0].id,
+      });
+
+      await this.writeAudit(
+        manager,
+        workspaceId,
+        feedback.id,
+        userId,
+        'feedback.created',
+        null,
+        { content: feedback.content, version: feedback.version },
+      );
+
+      return feedback;
     });
   }
 }

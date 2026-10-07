@@ -12,6 +12,8 @@ export class FeedbackResponseDto {
 
   @ApiProperty({ example: 'Please add keyboard shortcuts.' })
   content!: string;
+  @ApiProperty({ example: 1, minimum: 1 })
+  version!: number;
 
   @ApiProperty({ format: 'date-time' })
   occurredAt!: string;

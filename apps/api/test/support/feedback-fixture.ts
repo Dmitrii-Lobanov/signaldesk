@@ -137,6 +137,11 @@ async function createFeedbackFixture(): Promise<FeedbackFixture> {
     async close() {
       try {
         await database.query(
+          'DELETE FROM audit_events WHERE workspace_id IN ($1, $2)',
+          [workspaceId, otherWorkspaceId],
+        );
+
+        await database.query(
           'DELETE FROM feedback WHERE workspace_id IN ($1, $2)',
           [workspaceId, otherWorkspaceId],
         );

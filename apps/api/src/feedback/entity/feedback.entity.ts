@@ -31,6 +31,23 @@ export class Feedback {
 
   @Column({ type: 'text' })
   content!: string;
+  @Column({ type: 'integer', default: 1 })
+  version!: number;
+  @Column({
+    name: 'create_request_key',
+    type: 'uuid',
+    nullable: true,
+    select: false,
+  })
+  createRequestKey!: string | null;
+
+  @Column({
+    name: 'create_request_user_id',
+    type: 'text',
+    nullable: true,
+    select: false,
+  })
+  createRequestUserId!: string | null;
 
   @Column({
     name: 'occurred_at',

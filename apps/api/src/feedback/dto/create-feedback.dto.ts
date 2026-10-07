@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Matches, MaxLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateFeedbackDto {
   @ApiProperty({
@@ -11,4 +17,12 @@ export class CreateFeedbackDto {
   @Matches(/\S/, { message: 'Feedback must not be empty' })
   @MaxLength(5000)
   content!: string;
+  @ApiProperty({
+    format: 'uuid',
+    required: false,
+    description: 'Reuse this key when retrying the same create request',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  requestKey?: string;
 }

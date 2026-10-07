@@ -11,6 +11,7 @@ import {
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -28,6 +29,8 @@ import {
 import { FeedbackService } from './feedback.service.js';
 import { FeedbackPageResponseDto } from './dto/feedback-page-response.dto.js';
 import { ListFeedbackQueryDto } from './dto/list-feedback-query.dto.js';
+import { AuditEventResponseDto } from './dto/audit-event-response.dto.js';
+import { EditFeedbackDto } from './dto/edit-feedback.dto.js';
 
 @ApiTags('feedback')
 @Controller('workspaces/:workspaceId/feedback')
@@ -111,9 +114,50 @@ export class FeedbackController {
     );
   }
 
+  @Get(':feedbackId/history')
+  @ApiOkResponse({ type: AuditEventResponseDto, isArray: true })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Workspace access denied' })
+  @ApiNotFoundResponse({ description: 'Feedback not found' })
+  history(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,
+    @Session() session: UserSession,
+  ) {
+    return this.feedbackService.history(
+      workspaceId,
+      session.user.id,
+      feedbackId,
+    );
+  }
+
+  @Patch(':feedbackId')
+  @ApiOkResponse({ type: FeedbackResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid feedback edit' })
+  @ApiUnauthorizedResponse({ description: 'Sign-in required' })
+  @ApiForbiddenResponse({ description: 'Editor access required' })
+  @ApiNotFoundResponse({ description: 'Feedback not found' })
+  @ApiConflictResponse({ description: 'Feedback changed since it was loaded' })
+  edit(
+    @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
+    @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,
+    @Session() session: UserSession,
+    @Body() dto: EditFeedbackDto,
+  ) {
+    return this.feedbackService.edit(
+      workspaceId,
+      session.user.id,
+      feedbackId,
+      dto,
+    );
+  }
+
   @Post()
   @ApiCreatedResponse({ type: FeedbackResponseDto })
   @ApiBadRequestResponse({ type: ValidationErrorResponseDto })
+  @ApiConflictResponse({
+    description: 'Request key was already used for different feedback',
+  })
   create(
     @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
     @Session() session: UserSession,
