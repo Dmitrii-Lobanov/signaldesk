@@ -167,7 +167,10 @@ describe('Feedback API (e2e)', () => {
   });
 
   it('rejects whitespace-only feedback without saving it', async () => {
-    const before = await database.query('SELECT count(*) FROM feedback');
+    const before = await database.query(
+      'SELECT count(*) FROM feedback WHERE workspace_id = $1',
+      [workspaceId],
+    );
 
     const response = await request(app.getHttpServer())
       .post(feedbackUrl)
@@ -177,7 +180,10 @@ describe('Feedback API (e2e)', () => {
 
     expect(response.body.message).toContain('Feedback must not be empty');
 
-    const after = await database.query('SELECT count(*) FROM feedback');
+    const after = await database.query(
+      'SELECT count(*) FROM feedback WHERE workspace_id = $1',
+      [workspaceId],
+    );
     expect(after[0].count).toBe(before[0].count);
   });
 });
