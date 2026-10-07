@@ -11,6 +11,59 @@ import styles from "../../page.module.css";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
+type CurrentUser = {
+  memberships: Array<{
+    workspaceId: string;
+    role: "editor" | "viewer";
+  }>;
+};
+
+type DetailStateProps = {
+  title: string;
+  message: string;
+  backHref: string;
+  retryHref?: string;
+};
+
+function DetailState({
+  title,
+  message,
+  backHref,
+  retryHref,
+}: DetailStateProps) {
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <h1>{title}</h1>
+        <p role={retryHref ? "alert" : undefined}>{message}</p>
+        {retryHref && <Link href={retryHref}>Try again</Link>}
+        <Link href={backHref}>Back to inbox</Link>
+      </main>
+    </div>
+  );
+}
+
+function returnToInbox(from: string | string[] | undefined): string {
+  const requested = typeof from === "string" ? from : "/";
+  return requested === "/" || requested.startsWith("/?") ? requested : "/";
+}
+
+async function fetchApi(
+  apiBaseUrl: string,
+  path: string,
+  cookie: string,
+): Promise<Response | null> {
+  try {
+    return await fetch(`${apiBaseUrl}${path}`, {
+      headers: { Cookie: cookie },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch {
+    return null;
+  }
+}
+
 export default async function FeedbackDetail({
   params,
   searchParams,
@@ -20,11 +73,7 @@ export default async function FeedbackDetail({
 }) {
   const { id } = await params;
   const { from } = await searchParams;
-  const requestedReturn = typeof from === "string" ? from : "/";
-  const backHref =
-    requestedReturn === "/" || requestedReturn.startsWith("/?")
-      ? requestedReturn
-      : "/";
+  const backHref = returnToInbox(from);
   const retryHref = `/feedback/${encodeURIComponent(id)}?${new URLSearchParams({
     from: backHref,
   })}`;
@@ -33,150 +82,107 @@ export default async function FeedbackDetail({
   if (!cookie) redirect("/sign-in");
 
   const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
-  let response: Response;
+  const workspacePath = `/workspaces/${workspaceId}`;
+  const feedbackPath = `${workspacePath}/feedback/${encodeURIComponent(id)}`;
 
-  try {
-    response = await fetch(
-      `${apiBaseUrl}/workspaces/${workspaceId}/feedback/${encodeURIComponent(id)}`,
-      {
-        headers: { Cookie: cookie },
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      },
-    );
-  } catch {
+  const feedbackResponse = await fetchApi(apiBaseUrl, feedbackPath, cookie);
+
+  if (feedbackResponse?.status === 401) redirect("/sign-in");
+
+  if (feedbackResponse?.status === 403) {
     return (
-      <main className={styles.main}>
-        <h1>Feedback</h1>
-        <p role="alert">Couldn&apos;t reach SignalDesk. Try again.</p>
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
+      <DetailState
+        title="Access denied"
+        message="You cannot view feedback in this workspace."
+        backHref={backHref}
+      />
     );
   }
 
-  if (response.status === 401) redirect("/sign-in");
-
-  if (response.status === 403) {
+  if (feedbackResponse?.status === 404) {
     return (
-      <main className={styles.main}>
-        <h1>Access denied</h1>
-        <p>You cannot view feedback in this workspace.</p>
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
+      <DetailState
+        title="Feedback not found"
+        message="This feedback item is unavailable."
+        backHref={backHref}
+      />
     );
   }
 
-  if (response.status === 404) {
+  if (!feedbackResponse?.ok) {
     return (
-      <main className={styles.main}>
-        <h1>Feedback not found</h1>
-        <p>This feedback item is unavailable.</p>
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
+      <DetailState
+        title="Feedback"
+        message="Couldn't load this feedback item."
+        backHref={backHref}
+        retryHref={retryHref}
+      />
     );
   }
 
-  if (!response.ok) {
-    return (
-      <main className={styles.main}>
-        <h1>Feedback</h1>
-        <p role="alert">Couldn&apos;t load this feedback item.</p>
-        <Link href={retryHref}>Try again</Link>
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
-    );
-  }
+  const feedback = (await feedbackResponse.json()) as FeedbackItem;
 
-  const feedback = (await response.json()) as FeedbackItem;
+  const [classificationResponse, areasResponse, tagsResponse, userResponse] =
+    await Promise.all([
+      fetchApi(apiBaseUrl, `${feedbackPath}/classification`, cookie),
+      fetchApi(apiBaseUrl, `${workspacePath}/product-areas`, cookie),
+      fetchApi(apiBaseUrl, `${workspacePath}/tags`, cookie),
+      fetchApi(apiBaseUrl, "/me", cookie),
+    ]);
 
-  let classificationResponse: Response;
-  let areasResponse: Response;
-  let tagsResponse: Response;
-  let userResponse: Response;
+  const relatedResponses = [
+    classificationResponse,
+    areasResponse,
+    tagsResponse,
+    userResponse,
+  ];
 
-  try {
-    [classificationResponse, areasResponse, tagsResponse, userResponse] =
-      await Promise.all([
-        fetch(
-          `${apiBaseUrl}/workspaces/${workspaceId}/feedback/${encodeURIComponent(id)}/classification`,
-          { headers: { Cookie: cookie }, cache: "no-store" },
-        ),
-        fetch(`${apiBaseUrl}/workspaces/${workspaceId}/product-areas`, {
-          headers: { Cookie: cookie },
-          cache: "no-store",
-        }),
-        fetch(`${apiBaseUrl}/workspaces/${workspaceId}/tags`, {
-          headers: { Cookie: cookie },
-          cache: "no-store",
-        }),
-        fetch(`${apiBaseUrl}/me`, {
-          headers: { Cookie: cookie },
-          cache: "no-store",
-        }),
-      ]);
-  } catch {
-    return (
-      <main className={styles.main}>
-        <h1>Feedback detail</h1>
-        <p role="alert">Couldn&apos;t load classification. Try again.</p>
-        <Link href={retryHref}>Try again</Link>
-      </main>
-    );
-  }
-
-  if (
-    [classificationResponse, areasResponse, tagsResponse, userResponse].some(
-      (item) => item.status === 401,
-    )
-  ) {
+  if (relatedResponses.some((response) => response?.status === 401)) {
     redirect("/sign-in");
   }
 
-  if (
-    [classificationResponse, areasResponse, tagsResponse, userResponse].some(
-      (item) => item.status === 403,
-    )
-  ) {
+  if (relatedResponses.some((response) => response?.status === 403)) {
     return (
-      <main className={styles.main}>
-        <h1>Access denied</h1>
-        <p>You cannot view classification in this workspace.</p>
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
+      <DetailState
+        title="Access denied"
+        message="You cannot view classification in this workspace."
+        backHref={backHref}
+      />
     );
   }
 
   if (
-    !classificationResponse.ok ||
-    !areasResponse.ok ||
-    !tagsResponse.ok ||
-    !userResponse.ok
+    !classificationResponse?.ok ||
+    !areasResponse?.ok ||
+    !tagsResponse?.ok ||
+    !userResponse?.ok
   ) {
     return (
-      <main className={styles.main}>
-        <h1>Feedback detail</h1>
-        <p role="alert">Couldn&apos;t load classification. Try again.</p>
-        <Link href={retryHref}>Try again</Link>
-      </main>
+      <DetailState
+        title="Feedback detail"
+        message="Couldn't load classification."
+        backHref={backHref}
+        retryHref={retryHref}
+      />
     );
   }
 
-  const classification =
-    (await classificationResponse.json()) as FeedbackClassification;
-  const areas = (await areasResponse.json()) as ClassificationOption[];
-  const tags = (await tagsResponse.json()) as ClassificationOption[];
-  const user = (await userResponse.json()) as {
-    memberships: Array<{
-      workspaceId: string;
-      role: "editor" | "viewer";
-    }>;
-  };
+  const [classification, areas, tags, user] = (await Promise.all([
+    classificationResponse.json(),
+    areasResponse.json(),
+    tagsResponse.json(),
+    userResponse.json(),
+  ])) as [
+    FeedbackClassification,
+    ClassificationOption[],
+    ClassificationOption[],
+    CurrentUser,
+  ];
 
   const isEditor = user.memberships.some(
     (membership) =>
       membership.workspaceId === workspaceId && membership.role === "editor",
   );
-
   const areaName =
     areas.find((area) => area.id === classification.productAreaId)?.name ??
     "None";
@@ -188,6 +194,7 @@ export default async function FeedbackDetail({
     <div className={styles.page}>
       <main className={styles.main}>
         <Link href={backHref}>Back to inbox</Link>
+
         <article aria-labelledby="feedback-title">
           <h1 id="feedback-title">Feedback detail</h1>
           <p className={styles.feedbackContent}>{feedback.content}</p>
