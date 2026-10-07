@@ -299,6 +299,152 @@ describe('Feedback API (e2e)', () => {
     }
   });
 
+  it('classifies feedback only with authorized workspace choices', async () => {
+    const ownAreaId = randomUUID();
+    const foreignAreaId = randomUUID();
+    const ownTagId = randomUUID();
+    const foreignTagId = randomUUID();
+    const foreignFeedbackId = randomUUID();
+
+    const created = await request(app.getHttpServer())
+      .post(feedbackUrl)
+      .set('Cookie', editorCookie)
+      .send({ content })
+      .expect(201);
+
+    const classificationUrl = `${feedbackUrl}/${created.body.id}/classification`;
+
+    await database.query(
+      `INSERT INTO product_areas (id, workspace_id, name)
+       VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [
+        ownAreaId,
+        workspaceId,
+        `Area ${ownAreaId}`,
+        foreignAreaId,
+        otherWorkspaceId,
+        `Area ${foreignAreaId}`,
+      ],
+    );
+
+    await database.query(
+      `INSERT INTO tags (id, workspace_id, name)
+       VALUES ($1, $2, $3), ($4, $5, $6)`,
+      [
+        ownTagId,
+        workspaceId,
+        `Tag ${ownTagId}`,
+        foreignTagId,
+        otherWorkspaceId,
+        `Tag ${foreignTagId}`,
+      ],
+    );
+
+    await database.query(
+      `INSERT INTO feedback (id, workspace_id, content)
+       VALUES ($1, $2, $3)`,
+      [foreignFeedbackId, otherWorkspaceId, content],
+    );
+
+    try {
+      const initial = await request(app.getHttpServer())
+        .get(classificationUrl)
+        .set('Cookie', viewerCookie)
+        .expect(200);
+
+      expect(initial.body).toEqual({
+        feedbackId: created.body.id,
+        productAreaId: null,
+        tagIds: [],
+      });
+
+      const saved = await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: ownAreaId, tagIds: [ownTagId] })
+        .expect(200);
+
+      expect(saved.body).toEqual({
+        feedbackId: created.body.id,
+        productAreaId: ownAreaId,
+        tagIds: [ownTagId],
+      });
+
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', viewerCookie)
+        .send({ productAreaId: null, tagIds: [] })
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .send({ productAreaId: null, tagIds: [] })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .patch(`${otherFeedbackUrl}/${created.body.id}/classification`)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: null, tagIds: [] })
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .patch(`${feedbackUrl}/${foreignFeedbackId}/classification`)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: null, tagIds: [] })
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: foreignAreaId, tagIds: [ownTagId] })
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: null, tagIds: [foreignTagId] })
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: null, tagIds: [ownTagId, ownTagId] })
+        .expect(400);
+
+      const afterRejectedWrites = await request(app.getHttpServer())
+        .get(classificationUrl)
+        .set('Cookie', viewerCookie)
+        .expect(200);
+
+      expect(afterRejectedWrites.body).toEqual(saved.body);
+
+      const cleared = await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({ productAreaId: null, tagIds: [] })
+        .expect(200);
+
+      expect(cleared.body).toEqual({
+        feedbackId: created.body.id,
+        productAreaId: null,
+        tagIds: [],
+      });
+    } finally {
+      await database.query('DELETE FROM feedback WHERE id IN ($1, $2)', [
+        created.body.id,
+        foreignFeedbackId,
+      ]);
+      await database.query('DELETE FROM tags WHERE id IN ($1, $2)', [
+        ownTagId,
+        foreignTagId,
+      ]);
+      await database.query('DELETE FROM product_areas WHERE id IN ($1, $2)', [
+        ownAreaId,
+        foreignAreaId,
+      ]);
+    }
+  });
+
   it('lets an editor create and list feedback', async () => {
     const created = await request(app.getHttpServer())
       .post(feedbackUrl)
