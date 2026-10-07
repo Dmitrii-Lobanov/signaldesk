@@ -1,57 +1,61 @@
 .page {
   min-height: 100vh;
-  padding: 48px 24px;
-  background: #fafafa;
-  color: #171717;
+  padding: clamp(1.5rem, 5vw, 3rem) 1.5rem;
 }
 
 .main {
   width: min(100%, 720px);
-  margin: 0 auto;
+  margin-inline: auto;
   display: grid;
-  gap: 24px;
+  align-content: start;
+  gap: 1.5rem;
+}
+
+.main > section,
+.main > article {
+  min-width: 0;
 }
 
 .form {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
+}
+
+.form :is(input, textarea) {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  background: var(--surface);
 }
 
 .form textarea {
-  width: 100%;
-  padding: 12px;
-  font: inherit;
-  border: 1px solid #777;
-  border-radius: 6px;
-}
-
-.form input {
-  width: 100%;
-  padding: 12px;
-  font: inherit;
-  border: 1px solid #777;
-  border-radius: 6px;
-}
-
-.form button {
-  width: fit-content;
-  padding: 10px 16px;
-  font: inherit;
-  cursor: pointer;
-}
-
-.form button:disabled {
-  cursor: wait;
+  resize: vertical;
 }
 
 .list {
   display: grid;
-  gap: 12px;
-  padding-left: 24px;
+  gap: 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.list li {
+  overflow-wrap: anywhere;
 }
 
 .feedbackContent {
-  margin: 24px 0;
+  margin: 1.5rem 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.main dt {
+  font-weight: 700;
+}
+
+.main dd {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
 }
