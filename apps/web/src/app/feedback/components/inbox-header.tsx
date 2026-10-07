@@ -1,5 +1,5 @@
 import { SignOutButton } from "@/app/sign-out-button";
-import styles from "../../../page.module.css";
+import styles from "../../page.module.css";
 
 export function InboxHeader({ email }: { email: string }) {
   return (

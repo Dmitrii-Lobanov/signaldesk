@@ -3,8 +3,8 @@
 import { useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ClassificationOption } from "../api/feedback";
-import styles from "./page.module.css";
+import styles from "../../page.module.css";
+import { ClassificationOption } from "@/api/feedback";
 
 type Filters = { q: string; area: string; tag: string };
 

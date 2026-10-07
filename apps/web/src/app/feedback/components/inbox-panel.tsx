@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { inboxUrl, type InboxFilterValues } from "./inbox-url";
-import styles from "../../../page.module.css";
-import { InboxFilters } from "@/app/inbox-filters";
+import styles from "../../page.module.css";
 import { ClassificationOption, FeedbackPage } from "@/api/feedback";
+import { InboxFilters } from "./inbox-filters";
 
 type Props = {
   filters: InboxFilterValues;

@@ -5,9 +5,9 @@ import styles from "../../page.module.css";
 import { ClassificationOption, FeedbackPage } from "@/api/feedback";
 import { SignOutButton } from "@/app/sign-out-button";
 import { FeedbackForm } from "@/app/feedback-form";
-import { inboxUrl } from "./components/inbox-url";
-import { InboxHeader } from "./components/inbox-header";
-import { InboxPanel } from "./components/inbox-panel";
+import { InboxHeader } from "../components/inbox-header";
+import { InboxPanel } from "../components/inbox-panel";
+import { inboxUrl } from "../components/inbox-url";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 

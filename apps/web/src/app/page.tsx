@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import type { ClassificationOption, FeedbackPage } from "../api/feedback";
 import { FeedbackForm } from "./feedback-form";
 import { SignOutButton } from "./sign-out-button";
-import { InboxFilters } from "./inbox-filters";
 import styles from "./page.module.css";
+import { InboxHeader } from "./feedback/components/inbox-header";
+import { InboxPanel } from "./feedback/components/inbox-panel";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
@@ -175,25 +176,10 @@ export default async function Home({
     ? ((await tagsResponse.json()) as ClassificationOption[])
     : [];
 
-  const previousCursors = cursors.slice(0, -1);
-  const nextCursors = page?.nextCursor ? [...cursors, page.nextCursor] : [];
-
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <header className={styles.header}>
-          <div>
-            <p className={styles.eyebrow}>WORKSPACE INBOX</p>
-            <h1>Feedback</h1>
-            <p className={styles.intro}>
-              Find customer signals and turn them into organized evidence.
-            </p>
-          </div>
-          <div className={styles.account}>
-            <span>{user.email}</span>
-            <SignOutButton />
-          </div>
-        </header>
+        <InboxHeader email={user.email} />
 
         {membership.role === "editor" && (
           <section className={styles.panel} aria-labelledby="capture-heading">
@@ -202,72 +188,15 @@ export default async function Home({
           </section>
         )}
 
-        <section className={styles.panel} aria-labelledby="feedback-heading">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.eyebrow}>BROWSE</p>
-              <h2 id="feedback-heading">Inbox</h2>
-            </div>
-          </div>
-
-          <InboxFilters
-            key={`${filters.q}|${filters.area}|${filters.tag}`}
-            filters={filters}
-            areas={areas}
-            tags={tags}
-          />
-
-          {loadFailed ? (
-            <p role="alert" className={styles.message}>
-              {pageResponse.status === 400
-                ? "These filters or this page link are invalid."
-                : "Couldn't load feedback."}{" "}
-              <Link href={inboxUrl(filters)}>Try the first page</Link>
-            </p>
-          ) : page?.items.length === 0 ? (
-            <div className={styles.emptyState} role="status">
-              <h3>No matching feedback</h3>
-              <p>Try a different search or clear the filters.</p>
-            </div>
-          ) : (
-            <>
-              <p className={styles.resultCount} role="status">
-                Showing {page?.items.length ?? 0} feedback items
-              </p>
-              <ul className={styles.list}>
-                {page?.items.map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      className={styles.feedbackLink}
-                      href={`/feedback/${item.id}?${new URLSearchParams({
-                        from: inboxUrl(filters, cursors),
-                      })}`}
-                    >
-                      <span className={styles.feedbackText}>
-                        {item.content}
-                      </span>
-                      <span className={styles.feedbackMeta}>
-                        {item.source} ·{" "}
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-
-              <nav aria-label="Feedback pages" className={styles.pagination}>
-                {cursors.length > 0 && (
-                  <Link href={inboxUrl(filters, previousCursors)}>
-                    ← Previous page
-                  </Link>
-                )}
-                {page?.nextCursor && (
-                  <Link href={inboxUrl(filters, nextCursors)}>Next page →</Link>
-                )}
-              </nav>
-            </>
-          )}
-        </section>
+        <InboxPanel
+          filters={filters}
+          cursors={cursors}
+          areas={areas}
+          tags={tags}
+          page={page}
+          loadFailed={loadFailed}
+          invalidQuery={pageResponse.status === 400}
+        />
       </main>
     </div>
   );
