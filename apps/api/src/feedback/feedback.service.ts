@@ -369,8 +369,8 @@ export class FeedbackService {
         feedbackId,
         userId,
         'feedback.classified',
-        { ...before },
-        { ...after },
+        { productAreaId: before.productAreaId, tagIds: before.tagIds },
+        { productAreaId: after.productAreaId, tagIds: after.tagIds },
       );
 
       return after;
