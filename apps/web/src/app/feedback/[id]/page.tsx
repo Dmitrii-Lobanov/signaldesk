@@ -1,227 +1,188 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type {
-  ClassificationOption,
-  FeedbackClassification,
-  FeedbackItem,
-} from "../../../api/feedback";
-import { ClassificationForm } from "./classification-form";
 import styles from "../../page.module.css";
+import { ClassificationOption, FeedbackPage } from "@/api/feedback";
+import { SignOutButton } from "@/app/sign-out-button";
+import { FeedbackForm } from "@/app/feedback-form";
+import { inboxUrl } from "./components/inbox-url";
+import { InboxHeader } from "./components/inbox-header";
+import { InboxPanel } from "./components/inbox-panel";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
 type CurrentUser = {
+  email: string;
   memberships: Array<{
     workspaceId: string;
     role: "editor" | "viewer";
   }>;
 };
 
-type DetailStateProps = {
-  title: string;
-  message: string;
-  backHref: string;
-  retryHref?: string;
+type InboxParams = {
+  q?: string;
+  area?: string;
+  tag?: string;
+  cursor?: string | string[];
 };
 
-function DetailState({
-  title,
-  message,
-  backHref,
-  retryHref,
-}: DetailStateProps) {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <h1>{title}</h1>
-        <p role={retryHref ? "alert" : undefined}>{message}</p>
-        {retryHref && <Link href={retryHref}>Try again</Link>}
-        <Link href={backHref}>Back to inbox</Link>
-      </main>
-    </div>
-  );
+function first(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
 
-function returnToInbox(from: string | string[] | undefined): string {
-  const requested = typeof from === "string" ? from : "/";
-  return requested === "/" || requested.startsWith("/?") ? requested : "/";
-}
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<InboxParams>;
+}) {
+  const rawParams = await searchParams;
+  const filters = {
+    q: first(rawParams.q).trim(),
+    area: first(rawParams.area),
+    tag: first(rawParams.tag),
+  };
+  const cursors = rawParams.cursor
+    ? Array.isArray(rawParams.cursor)
+      ? rawParams.cursor
+      : [rawParams.cursor]
+    : [];
 
-async function fetchApi(
-  apiBaseUrl: string,
-  path: string,
-  cookie: string,
-): Promise<Response | null> {
+  const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
+  const cookie = (await headers()).get("cookie") ?? "";
+
+  if (!cookie) redirect("/sign-in");
+
+  let userResponse: Response;
+
   try {
-    return await fetch(`${apiBaseUrl}${path}`, {
+    userResponse = await fetch(`${apiBaseUrl}/me`, {
       headers: { Cookie: cookie },
       cache: "no-store",
       signal: AbortSignal.timeout(10000),
     });
   } catch {
-    return null;
+    return <p role="alert">Couldn&apos;t reach SignalDesk. Try again.</p>;
   }
-}
 
-export default async function FeedbackDetail({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string | string[] }>;
-}) {
-  const { id } = await params;
-  const { from } = await searchParams;
-  const backHref = returnToInbox(from);
-  const retryHref = `/feedback/${encodeURIComponent(id)}?${new URLSearchParams({
-    from: backHref,
-  })}`;
-  const cookie = (await headers()).get("cookie") ?? "";
+  if (userResponse.status === 401) redirect("/sign-in");
 
-  if (!cookie) redirect("/sign-in");
+  if (!userResponse.ok) {
+    return <p role="alert">Couldn&apos;t load your account. Try again.</p>;
+  }
 
-  const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
-  const workspacePath = `/workspaces/${workspaceId}`;
-  const feedbackPath = `${workspacePath}/feedback/${encodeURIComponent(id)}`;
+  const user = (await userResponse.json()) as CurrentUser;
+  const membership = user.memberships.find(
+    (item) => item.workspaceId === workspaceId,
+  );
 
-  const feedbackResponse = await fetchApi(apiBaseUrl, feedbackPath, cookie);
-
-  if (feedbackResponse?.status === 401) redirect("/sign-in");
-
-  if (feedbackResponse?.status === 403) {
+  if (!membership) {
     return (
-      <DetailState
-        title="Access denied"
-        message="You cannot view feedback in this workspace."
-        backHref={backHref}
-      />
+      <main className={styles.main}>
+        <h1>Access denied</h1>
+        <p>You do not belong to this workspace.</p>
+        <SignOutButton />
+      </main>
     );
   }
 
-  if (feedbackResponse?.status === 404) {
-    return (
-      <DetailState
-        title="Feedback not found"
-        message="This feedback item is unavailable."
-        backHref={backHref}
-      />
-    );
+  const apiParams = new URLSearchParams({ limit: "20" });
+  if (filters.q) apiParams.set("q", filters.q);
+  if (filters.area) apiParams.set("productAreaId", filters.area);
+  if (filters.tag) apiParams.set("tagId", filters.tag);
+  if (cursors.length > 0) {
+    apiParams.set("cursor", cursors[cursors.length - 1]);
   }
 
-  if (!feedbackResponse?.ok) {
-    return (
-      <DetailState
-        title="Feedback"
-        message="Couldn't load this feedback item."
-        backHref={backHref}
-        retryHref={retryHref}
-      />
-    );
-  }
+  let pageResponse: Response;
+  let areasResponse: Response;
+  let tagsResponse: Response;
 
-  const feedback = (await feedbackResponse.json()) as FeedbackItem;
-
-  const [classificationResponse, areasResponse, tagsResponse, userResponse] =
-    await Promise.all([
-      fetchApi(apiBaseUrl, `${feedbackPath}/classification`, cookie),
-      fetchApi(apiBaseUrl, `${workspacePath}/product-areas`, cookie),
-      fetchApi(apiBaseUrl, `${workspacePath}/tags`, cookie),
-      fetchApi(apiBaseUrl, "/me", cookie),
+  try {
+    [pageResponse, areasResponse, tagsResponse] = await Promise.all([
+      fetch(
+        `${apiBaseUrl}/workspaces/${workspaceId}/feedback/page?${apiParams}`,
+        {
+          headers: { Cookie: cookie },
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        },
+      ),
+      fetch(`${apiBaseUrl}/workspaces/${workspaceId}/product-areas`, {
+        headers: { Cookie: cookie },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }),
+      fetch(`${apiBaseUrl}/workspaces/${workspaceId}/tags`, {
+        headers: { Cookie: cookie },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }),
     ]);
-
-  const relatedResponses = [
-    classificationResponse,
-    areasResponse,
-    tagsResponse,
-    userResponse,
-  ];
-
-  if (relatedResponses.some((response) => response?.status === 401)) {
-    redirect("/sign-in");
-  }
-
-  if (relatedResponses.some((response) => response?.status === 403)) {
+  } catch {
     return (
-      <DetailState
-        title="Access denied"
-        message="You cannot view classification in this workspace."
-        backHref={backHref}
-      />
+      <main className={styles.main}>
+        <h1>SignalDesk</h1>
+        <p role="alert">
+          Couldn&apos;t load the inbox.{" "}
+          <Link href={inboxUrl(filters, cursors)}>Try again</Link>
+        </p>
+      </main>
     );
   }
 
   if (
-    !classificationResponse?.ok ||
-    !areasResponse?.ok ||
-    !tagsResponse?.ok ||
-    !userResponse?.ok
+    [pageResponse, areasResponse, tagsResponse].some(
+      (response) => response.status === 401,
+    )
+  ) {
+    redirect("/sign-in");
+  }
+
+  if (
+    [pageResponse, areasResponse, tagsResponse].some(
+      (response) => response.status === 403,
+    )
   ) {
     return (
-      <DetailState
-        title="Feedback detail"
-        message="Couldn't load classification."
-        backHref={backHref}
-        retryHref={retryHref}
-      />
+      <main className={styles.main}>
+        <h1>Access denied</h1>
+        <p>You cannot view this workspace&apos;s inbox.</p>
+      </main>
     );
   }
 
-  const [classification, areas, tags, user] = (await Promise.all([
-    classificationResponse.json(),
-    areasResponse.json(),
-    tagsResponse.json(),
-    userResponse.json(),
-  ])) as [
-    FeedbackClassification,
-    ClassificationOption[],
-    ClassificationOption[],
-    CurrentUser,
-  ];
-
-  const isEditor = user.memberships.some(
-    (membership) =>
-      membership.workspaceId === workspaceId && membership.role === "editor",
-  );
-  const areaName =
-    areas.find((area) => area.id === classification.productAreaId)?.name ??
-    "None";
-  const tagNames = classification.tagIds.map(
-    (tagId) => tags.find((tag) => tag.id === tagId)?.name ?? "Unavailable tag",
-  );
+  const loadFailed = !pageResponse.ok || !areasResponse.ok || !tagsResponse.ok;
+  const page = pageResponse.ok
+    ? ((await pageResponse.json()) as FeedbackPage)
+    : null;
+  const areas = areasResponse.ok
+    ? ((await areasResponse.json()) as ClassificationOption[])
+    : [];
+  const tags = tagsResponse.ok
+    ? ((await tagsResponse.json()) as ClassificationOption[])
+    : [];
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Link href={backHref}>Back to inbox</Link>
+        <InboxHeader email={user.email} />
 
-        <article aria-labelledby="feedback-title">
-          <h1 id="feedback-title">Feedback detail</h1>
-          <p className={styles.feedbackContent}>{feedback.content}</p>
-          <dl>
-            <dt>Source</dt>
-            <dd>{feedback.source}</dd>
-            <dt>Occurred</dt>
-            <dd>{new Date(feedback.occurredAt).toLocaleString()}</dd>
-            <dt>Recorded</dt>
-            <dd>{new Date(feedback.createdAt).toLocaleString()}</dd>
-          </dl>
-        </article>
-
-        <section aria-labelledby="classification-heading">
-          <h2 id="classification-heading">Classification</h2>
-          <p>Product area: {areaName}</p>
-          <p>Tags: {tagNames.length > 0 ? tagNames.join(", ") : "None"}</p>
-        </section>
-
-        {isEditor && (
-          <ClassificationForm
-            feedbackId={id}
-            classification={classification}
-            areas={areas}
-            tags={tags}
-          />
+        {membership.role === "editor" && (
+          <section className={styles.panel} aria-labelledby="capture-heading">
+            <h2 id="capture-heading">Capture feedback</h2>
+            <FeedbackForm />
+          </section>
         )}
+
+        <InboxPanel
+          filters={filters}
+          cursors={cursors}
+          areas={areas}
+          tags={tags}
+          page={page}
+          loadFailed={loadFailed}
+          invalidQuery={pageResponse.status === 400}
+        />
       </main>
     </div>
   );
