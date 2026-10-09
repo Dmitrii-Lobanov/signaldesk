@@ -1,20 +1,20 @@
-import { randomUUID } from 'node:crypto';
-import { betterAuth } from 'better-auth';
-import pg from 'pg';
-import { expect, test } from '@playwright/test';
+import { randomUUID } from "node:crypto";
+import { betterAuth } from "better-auth";
+import pg from "pg";
+import { expect, test } from "@playwright/test";
 
 const { Pool } = pg;
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl || new URL(databaseUrl).pathname !== '/signaldesk_test') {
-  throw new Error('Browser test requires signaldesk_test');
+if (!databaseUrl || new URL(databaseUrl).pathname !== "/signaldesk_test") {
+  throw new Error("Browser test requires signaldesk_test");
 }
 
-const workspaceId = '11111111-1111-4111-8111-111111111111';
+const workspaceId = "11111111-1111-4111-8111-111111111111";
 const runId = randomUUID();
 const editorEmail = `browser-editor-${runId}@example.invalid`;
 const viewerEmail = `browser-viewer-${runId}@example.invalid`;
-const password = 'Browser-test-only-password-123!';
+const password = "Browser-test-only-password-123!";
 const original = `Browser journey original ${runId}`;
 const edited = `Browser journey edited ${runId}`;
 const stale = `Browser journey stale ${runId}`;
@@ -35,7 +35,7 @@ test.beforeAll(async () => {
   const auth = betterAuth({
     database: pool,
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: 'http://localhost:3100',
+    baseURL: "http://localhost:3100",
     emailAndPassword: {
       enabled: true,
       autoSignIn: false,
@@ -44,7 +44,7 @@ test.beforeAll(async () => {
 
   await auth.api.signUpEmail({
     body: {
-      name: 'Browser test editor',
+      name: "Browser test editor",
       email: editorEmail,
       password,
     },
@@ -52,7 +52,7 @@ test.beforeAll(async () => {
 
   await auth.api.signUpEmail({
     body: {
-      name: 'Browser test viewer',
+      name: "Browser test viewer",
       email: viewerEmail,
       password,
     },
@@ -69,7 +69,7 @@ test.beforeAll(async () => {
   )?.id;
 
   if (!editorUserId || !viewerUserId) {
-    throw new Error('Browser test users were not created');
+    throw new Error("Browser test users were not created");
   }
 
   await pool.query(
@@ -99,72 +99,82 @@ test.afterAll(async () => {
 
     if (ids.length > 0) {
       await pool.query(
-        'DELETE FROM audit_events WHERE feedback_id = ANY($1::uuid[])',
+        "DELETE FROM audit_events WHERE feedback_id = ANY($1::uuid[])",
         [ids],
       );
-      await pool.query(
-        'DELETE FROM feedback WHERE id = ANY($1::uuid[])',
-        [ids],
-      );
+      await pool.query("DELETE FROM feedback WHERE id = ANY($1::uuid[])", [
+        ids,
+      ]);
     }
 
-    await pool.query(
-      'DELETE FROM "user" WHERE "email" = ANY($1::text[])',
-      [[editorEmail, viewerEmail]],
-    );
+    await pool.query('DELETE FROM "user" WHERE "email" = ANY($1::text[])', [
+      [editorEmail, viewerEmail],
+    ]);
   } finally {
     await pool.end();
   }
 });
 
-test('editor creates and edits feedback; history names the actor; stale edit is rejected', async ({
+test("editor creates and edits feedback; history names the actor; stale edit is rejected", async ({
   page,
   context,
   browser,
 }) => {
-  await page.goto('/sign-in');
-  await page.getByRole('textbox', { name: 'Email' }).fill(editorEmail);
-  await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page).toHaveURL('http://localhost:3100/');
+  await page.goto("/sign-in");
+  await page.getByRole("textbox", { name: "Email" }).fill(editorEmail);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("http://localhost:3100/");
 
-  await page.getByRole('textbox', { name: 'Customer feedback' }).fill(original);
-  await page.getByRole('button', { name: 'Save feedback' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Feedback saved.' }))
-    .toBeVisible();
+  await page.getByRole("textbox", { name: "Customer feedback" }).fill(original);
+  await page.getByRole("button", { name: "Save feedback" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Feedback saved." }),
+  ).toBeVisible();
 
-  await page.getByRole('link', { name: new RegExp(original) }).click();
-  await expect(page.getByRole('heading', { name: 'Feedback detail' }))
-    .toBeVisible();
+  await page.getByRole("link", { name: new RegExp(original) }).click();
+  await expect(
+    page.getByRole("heading", { name: "Feedback detail" }),
+  ).toBeVisible();
 
   const detailUrl = page.url();
-  createdFeedbackId = new URL(detailUrl).pathname.split('/').at(-1);
+  createdFeedbackId = new URL(detailUrl).pathname.split("/").at(-1);
   expect(createdFeedbackId).toMatch(/^[0-9a-f-]{36}$/i);
 
   // Open a second, already authenticated tab before the successful edit.
   // It keeps the old version and will submit a stale change later.
   const stalePage = await context.newPage();
   await stalePage.goto(detailUrl);
-  await stalePage.getByRole('textbox', { name: 'Feedback text' }).fill(stale);
+  await stalePage.getByRole("textbox", { name: "Feedback text" }).fill(stale);
 
-  await page.getByRole('textbox', { name: 'Feedback text' }).fill(edited);
-  await page.getByRole('button', { name: 'Save edit' }).click();
-  await expect(page.getByRole('status').filter({
-    hasText: 'Feedback edit saved.',
-  })).toBeVisible();
-  await expect(page.getByRole('article').getByText(edited)).toBeVisible();
+  await page.getByRole("textbox", { name: "Feedback text" }).fill(edited);
+  await page.getByRole("button", { name: "Save edit" }).click();
+  await expect(
+    page.getByRole("status").filter({
+      hasText: "Feedback edit saved.",
+    }),
+  ).toBeVisible();
+
+  await expect(page.getByRole("article").getByText(edited)).toBeVisible();
 
   const history = page.locator('section[aria-labelledby="history-heading"]');
-  await expect(history.locator('li').filter({
-    hasText: `Edited by ${editorEmail}`,
-  })).toHaveCount(1);
 
-  await stalePage.getByRole('button', { name: 'Save edit' }).click();
-  await expect(stalePage.getByRole('alert')).toContainText(
-    'Someone changed this feedback',
-  );
   await expect(
-    stalePage.getByRole('textbox', { name: 'Feedback text' }),
+    history.locator("li").filter({
+      hasText: `Edited by ${editorEmail}`,
+    }),
+  ).toHaveCount(1);
+
+  await stalePage.getByRole("button", { name: "Save edit" }).click();
+
+  await expect(
+    stalePage.getByRole("alert").filter({
+      hasText: "Someone changed this feedback",
+    }),
+  ).toBeVisible();
+
+  await expect(
+    stalePage.getByRole("textbox", { name: "Feedback text" }),
   ).toHaveValue(stale);
 
   // The browser result is backed by one creation and one edit audit event.
@@ -177,8 +187,8 @@ test('editor creates and edits feedback; history names the actor; stale edit is 
   );
 
   expect(events.rows.map((event) => event.action)).toEqual([
-    'feedback.created',
-    'feedback.edited',
+    "feedback.created",
+    "feedback.edited",
   ]);
   expect(events.rows[1].actor_user_id).toBe(editorUserId);
   expect(events.rows[1].before).toEqual({
@@ -194,21 +204,23 @@ test('editor creates and edits feedback; history names the actor; stale edit is 
   const viewerContext = await browser.newContext();
   try {
     const viewerPage = await viewerContext.newPage();
-    await viewerPage.goto('/sign-in');
-    await viewerPage.getByRole('textbox', { name: 'Email' }).fill(viewerEmail);
-    await viewerPage.getByLabel('Password').fill(password);
-    await viewerPage.getByRole('button', { name: 'Sign in' }).click();
-    await expect(viewerPage).toHaveURL('http://localhost:3100/');
+    await viewerPage.goto("/sign-in");
+    await viewerPage.getByRole("textbox", { name: "Email" }).fill(viewerEmail);
+    await viewerPage.getByLabel("Password").fill(password);
+    await viewerPage.getByRole("button", { name: "Sign in" }).click();
+    await expect(viewerPage).toHaveURL("http://localhost:3100/");
 
     await viewerPage.goto(detailUrl);
-    await expect(viewerPage.getByRole('article').getByText(edited))
-      .toBeVisible();
     await expect(
-      viewerPage.locator('section[aria-labelledby="history-heading"] li')
+      viewerPage.getByRole("article").getByText(edited),
+    ).toBeVisible();
+    await expect(
+      viewerPage
+        .locator('section[aria-labelledby="history-heading"] li')
         .filter({ hasText: `Edited by ${editorEmail}` }),
     ).toHaveCount(1);
     await expect(
-      viewerPage.getByRole('button', { name: 'Save edit' }),
+      viewerPage.getByRole("button", { name: "Save edit" }),
     ).toHaveCount(0);
   } finally {
     await viewerContext.close();
