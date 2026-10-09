@@ -79,3 +79,9 @@ jobs:
 
       - name: Build web
         run: npm run build --workspace=apps/web
+
+      - name: Install Chromium for browser test
+        run: npx playwright install --with-deps chromium
+
+      - name: Test critical browser journey
+        run: npm run test:e2e --workspace=apps/web
