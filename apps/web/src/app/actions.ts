@@ -165,7 +165,7 @@ export async function editFeedback(
 export async function saveFeedbackClassification(
   feedbackId: string,
   selection: UpdateFeedbackClassification,
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<{ ok: true; version: number } | { ok: false; message: string }> {
   const cookie = (await headers()).get("cookie") ?? "";
 
   if (!cookie) {
@@ -200,18 +200,22 @@ export async function saveFeedbackClassification(
             ? "You cannot classify feedback in this workspace."
             : response.status === 404
               ? "This feedback or one of its classification choices is unavailable."
-              : response.status === 400
-                ? "Check the selected area and tags, then try again."
-                : "Couldn’t save classification. Please try again.";
+              : response.status === 409
+                ? "Someone changed this feedback after you opened it. Your choices are still here. Review the latest version before saving."
+                : response.status === 400
+                  ? "Check the selected area and tags, then try again."
+                  : "Couldn’t save classification. Your choices are still here; try again.";
 
       return { ok: false, message };
     }
 
-    return { ok: true };
+    const saved = (await response.json()) as { version: number };
+    return { ok: true, version: saved.version };
   } catch {
     return {
       ok: false,
-      message: "Couldn’t save classification. Please try again.",
+      message:
+        "Couldn’t confirm the classification. Your choices are still here; try again.",
     };
   }
 }

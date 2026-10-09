@@ -25,6 +25,7 @@ export function ClassificationForm({
   const router = useRouter();
   const [areaId, setAreaId] = useState(classification.productAreaId ?? "");
   const [tagIds, setTagIds] = useState<string[]>(classification.tagIds);
+  const [version, setVersion] = useState(classification.version);
   const [message, setMessage] = useState<{
     kind: "success" | "error";
     text: string;
@@ -45,6 +46,7 @@ export function ClassificationForm({
       const result = await saveFeedbackClassification(feedbackId, {
         productAreaId: areaId || null,
         tagIds,
+        expectedVersion: version,
       });
 
       if (!result.ok) {
@@ -52,6 +54,7 @@ export function ClassificationForm({
         return;
       }
 
+      setVersion(result.version);
       setMessage({ kind: "success", text: "Classification saved." });
       router.refresh();
     });

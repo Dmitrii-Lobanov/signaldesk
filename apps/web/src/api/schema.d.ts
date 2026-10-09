@@ -178,11 +178,15 @@ export interface components {
       /** Format: uuid */
       productAreaId: string | null;
       tagIds: string[];
+      /** @example 1 */
+      version: number;
     };
     UpdateFeedbackClassificationDto: {
       /** Format: uuid */
       productAreaId: string | null;
       tagIds: string[];
+      /** @example 1 */
+      expectedVersion: number;
     };
     AuditEventResponseDto: {
       /** Format: uuid */
@@ -595,6 +599,13 @@ export interface operations {
       };
       /** @description Feedback, area, or tag not found */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Feedback changed since it was loaded */
+      409: {
         headers: {
           [name: string]: unknown;
         };
