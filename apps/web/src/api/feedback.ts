@@ -11,6 +11,19 @@ export type FeedbackClassification =
 export type UpdateFeedbackClassification =
   components["schemas"]["UpdateFeedbackClassificationDto"];
 
+export type ClassificationSuggestion = Pick<
+  FeedbackClassification,
+  "productAreaId" | "tagIds"
+> & {
+  feedbackVersion: number;
+  model: string;
+  promptVersion: string;
+  latencyMs: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  estimatedCostUsd: number | null;
+};
+
 export type FeedbackPage = components["schemas"]["FeedbackPageResponseDto"];
 
 export type AuditEvent = components["schemas"]["AuditEventResponseDto"];

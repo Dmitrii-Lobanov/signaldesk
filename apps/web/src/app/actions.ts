@@ -1,7 +1,10 @@
 "use server";
 
 import { headers } from "next/headers";
-import type { UpdateFeedbackClassification } from "../api/feedback";
+import type {
+  ClassificationSuggestion,
+  UpdateFeedbackClassification,
+} from "../api/feedback";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
@@ -216,6 +219,66 @@ export async function saveFeedbackClassification(
       ok: false,
       message:
         "Couldn’t confirm the classification. Your choices are still here; try again.",
+    };
+  }
+}
+
+export async function requestClassificationSuggestion(
+  feedbackId: string,
+): Promise<
+  | { ok: true; suggestion: ClassificationSuggestion }
+  | { ok: false; message: string }
+> {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      feedbackId,
+    )
+  ) {
+    return { ok: false, message: "Invalid feedback item." };
+  }
+
+  const cookie = (await headers()).get("cookie") ?? "";
+  if (!cookie) {
+    return {
+      ok: false,
+      message: "Your session expired. Please sign in again.",
+    };
+  }
+
+  try {
+    const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3001";
+    const response = await fetch(
+      `${apiBaseUrl}/workspaces/${workspaceId}/feedback/${feedbackId}/classification-suggestion`,
+      {
+        method: "POST",
+        headers: { Cookie: cookie },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      },
+    );
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        message:
+          response.status === 401
+            ? "Your session expired. Please sign in again."
+            : response.status === 403
+              ? "You cannot request suggestions in this workspace."
+              : response.status === 404
+                ? "This feedback item is unavailable."
+                : response.status === 429
+                  ? "Suggestion limit reached. Classify manually or try later."
+                  : "Suggestions are unavailable. You can classify manually.",
+      };
+    }
+
+    const suggestion = (await response.json()) as ClassificationSuggestion;
+    return { ok: true, suggestion };
+  } catch {
+    return {
+      ok: false,
+      message: "Suggestions are unavailable. You can classify manually.",
     };
   }
 }
