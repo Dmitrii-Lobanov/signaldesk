@@ -106,7 +106,7 @@ describe('Feedback pagination API (e2e)', () => {
     await request(app.getHttpServer())
       .patch(`${feedbackUrl}/${matching.body.id}/classification`)
       .set('Cookie', editorCookie)
-      .send({ productAreaId: areaId, tagIds: [tagId] })
+      .send({ productAreaId: areaId, tagIds: [tagId], expectedVersion: 1 })
       .expect(200);
 
     const response = await request(app.getHttpServer())

@@ -9,4 +9,7 @@ export class FeedbackClassificationResponseDto {
 
   @ApiProperty({ type: [String], format: 'uuid' })
   tagIds!: string[];
+
+  @ApiProperty({ example: 1, minimum: 1 })
+  version!: number;
 }

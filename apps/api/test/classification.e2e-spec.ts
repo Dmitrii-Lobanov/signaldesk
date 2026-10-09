@@ -190,59 +190,104 @@ describe('Classification API (e2e)', () => {
         feedbackId: created.body.id,
         productAreaId: null,
         tagIds: [],
+        version: 1,
       });
 
       const saved = await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: ownAreaId, tagIds: [ownTagId] })
+        .send({
+          productAreaId: ownAreaId,
+          tagIds: [ownTagId],
+          expectedVersion: 1,
+        })
         .expect(200);
 
       expect(saved.body).toEqual({
         feedbackId: created.body.id,
         productAreaId: ownAreaId,
         tagIds: [ownTagId],
+        version: 2,
       });
+
+      // This form was loaded at version 1. It cannot overwrite version 2.
+      await request(app.getHttpServer())
+        .patch(classificationUrl)
+        .set('Cookie', editorCookie)
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 1,
+        })
+        .expect(409);
 
       await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', viewerCookie)
-        .send({ productAreaId: null, tagIds: [] })
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 2,
+        })
         .expect(403);
 
       await request(app.getHttpServer())
         .patch(classificationUrl)
-        .send({ productAreaId: null, tagIds: [] })
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 2,
+        })
         .expect(401);
 
       await request(app.getHttpServer())
         .patch(`${otherFeedbackUrl}/${created.body.id}/classification`)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: null, tagIds: [] })
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 2,
+        })
         .expect(403);
 
       await request(app.getHttpServer())
         .patch(`${feedbackUrl}/${foreignFeedbackId}/classification`)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: null, tagIds: [] })
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 2,
+        })
         .expect(404);
 
       await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: foreignAreaId, tagIds: [ownTagId] })
+        .send({
+          productAreaId: foreignAreaId,
+          tagIds: [ownTagId],
+          expectedVersion: 2,
+        })
         .expect(404);
 
       await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: null, tagIds: [foreignTagId] })
+        .send({
+          productAreaId: null,
+          tagIds: [foreignTagId],
+          expectedVersion: 2,
+        })
         .expect(404);
 
       await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: null, tagIds: [ownTagId, ownTagId] })
+        .send({
+          productAreaId: null,
+          tagIds: [ownTagId, ownTagId],
+          expectedVersion: 2,
+        })
         .expect(400);
 
       const afterRejectedWrites = await request(app.getHttpServer())
@@ -252,16 +297,32 @@ describe('Classification API (e2e)', () => {
 
       expect(afterRejectedWrites.body).toEqual(saved.body);
 
+      const historyBeforeClear = await request(app.getHttpServer())
+        .get(`${feedbackUrl}/${created.body.id}/history`)
+        .set('Cookie', viewerCookie)
+        .expect(200);
+
+      expect(
+        historyBeforeClear.body.map(
+          (event: { action: string }) => event.action,
+        ),
+      ).toEqual(['feedback.classified', 'feedback.created']);
+
       const cleared = await request(app.getHttpServer())
         .patch(classificationUrl)
         .set('Cookie', editorCookie)
-        .send({ productAreaId: null, tagIds: [] })
+        .send({
+          productAreaId: null,
+          tagIds: [],
+          expectedVersion: 2,
+        })
         .expect(200);
 
       expect(cleared.body).toEqual({
         feedbackId: created.body.id,
         productAreaId: null,
         tagIds: [],
+        version: 3,
       });
     } finally {
       await database.query('DELETE FROM feedback WHERE id IN ($1, $2)', [

@@ -3,7 +3,9 @@ import {
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
+  IsInt,
   IsUUID,
+  Min,
   ValidateIf,
 } from 'class-validator';
 
@@ -19,4 +21,9 @@ export class UpdateFeedbackClassificationDto {
   @ArrayUnique()
   @IsUUID('4', { each: true })
   tagIds!: string[];
+
+  @ApiProperty({ example: 1, minimum: 1 })
+  @IsInt()
+  @Min(1)
+  expectedVersion!: number;
 }

@@ -100,6 +100,7 @@ export class FeedbackController {
   @ApiUnauthorizedResponse({ description: 'Sign-in required' })
   @ApiForbiddenResponse({ description: 'Editor access required' })
   @ApiNotFoundResponse({ description: 'Feedback, area, or tag not found' })
+  @ApiConflictResponse({ description: 'Feedback changed since it was loaded' })
   updateClassification(
     @Param('workspaceId', new ParseUUIDPipe()) workspaceId: string,
     @Param('feedbackId', new ParseUUIDPipe()) feedbackId: string,

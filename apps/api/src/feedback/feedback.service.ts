@@ -223,6 +223,7 @@ export class FeedbackService {
         SELECT
           f.id AS "feedbackId",
           f.product_area_id AS "productAreaId",
+          f.version,
           COALESCE(
             array_agg(ft.tag_id ORDER BY ft.tag_id)
               FILTER (WHERE ft.tag_id IS NOT NULL),
@@ -233,7 +234,7 @@ export class FeedbackService {
           ON ft.workspace_id = f.workspace_id
          AND ft.feedback_id = f.id
         WHERE f.workspace_id = $1 AND f.id = $2
-        GROUP BY f.id, f.product_area_id
+        GROUP BY f.id, f.product_area_id, f.version
       `,
       [workspaceId, feedbackId],
     )) as FeedbackClassificationResponseDto[];
@@ -270,16 +271,20 @@ export class FeedbackService {
     return this.dataSource.transaction(async (manager) => {
       const feedbackRows = (await manager.query(
         `
-          SELECT id
+          SELECT id, version
           FROM feedback
           WHERE workspace_id = $1 AND id = $2
           FOR UPDATE
         `,
         [workspaceId, feedbackId],
-      )) as Array<{ id: string }>;
+      )) as Array<{ id: string; version: number }>;
 
       if (!feedbackRows[0]) {
         throw new NotFoundException('Feedback not found');
+      }
+
+      if (feedbackRows[0].version !== dto.expectedVersion) {
+        throw new ConflictException('Feedback changed since it was loaded');
       }
 
       const before = await this.readClassification(
@@ -320,6 +325,14 @@ export class FeedbackService {
         }
       }
 
+      const sameTags =
+        [...before.tagIds].sort().join(',') ===
+        [...dto.tagIds].sort().join(',');
+
+      if (before.productAreaId === dto.productAreaId && sameTags) {
+        return before;
+      }
+
       await manager.query(
         `
           UPDATE feedback
@@ -348,12 +361,6 @@ export class FeedbackService {
         );
       }
 
-      const after = await this.readClassification(
-        manager,
-        workspaceId,
-        feedbackId,
-      );
-
       await manager.query(
         `
           UPDATE feedback
@@ -363,14 +370,28 @@ export class FeedbackService {
         [workspaceId, feedbackId],
       );
 
+      const after = await this.readClassification(
+        manager,
+        workspaceId,
+        feedbackId,
+      );
+
       await this.writeAudit(
         manager,
         workspaceId,
         feedbackId,
         userId,
         'feedback.classified',
-        { productAreaId: before.productAreaId, tagIds: before.tagIds },
-        { productAreaId: after.productAreaId, tagIds: after.tagIds },
+        {
+          productAreaId: before.productAreaId,
+          tagIds: before.tagIds,
+          version: before.version,
+        },
+        {
+          productAreaId: after.productAreaId,
+          tagIds: after.tagIds,
+          version: after.version,
+        },
       );
 
       return after;
