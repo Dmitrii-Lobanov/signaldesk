@@ -8,6 +8,8 @@ import { ProductArea } from './entity/product-area.entity.js';
 import { Tag } from './entity/tag.entity.js';
 import { ClassificationController } from './classification.controller.js';
 import { Feedback } from './entity/feedback.entity.js';
+import { ClassificationSuggestionAdapter } from './classification-suggestion.adapter.js';
+import { ClassificationSuggestionController } from './classification-suggestion.controller.js';
 
 @Module({
   imports: [
@@ -19,7 +21,11 @@ import { Feedback } from './entity/feedback.entity.js';
       WorkspaceMembership,
     ]),
   ],
-  controllers: [FeedbackController, ClassificationController],
-  providers: [FeedbackService],
+  controllers: [
+    FeedbackController,
+    ClassificationController,
+    ClassificationSuggestionController,
+  ],
+  providers: [FeedbackService, ClassificationSuggestionAdapter],
 })
 export class FeedbackModule {}

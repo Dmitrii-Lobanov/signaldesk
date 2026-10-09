@@ -52,6 +52,10 @@ export class FeedbackService {
     }
   }
 
+  async requireEditor(workspaceId: string, userId: string): Promise<void> {
+    await this.requireMembership(workspaceId, userId, 'editor');
+  }
+
   async listProductAreas(
     workspaceId: string,
     userId: string,
