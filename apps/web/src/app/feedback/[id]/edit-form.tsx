@@ -34,7 +34,12 @@ export function EditForm({
         const result = await editFeedback(feedbackId, content, version);
 
         if (!result.ok) {
-          setMessage({ kind: "error", text: result.message });
+          setMessage({
+            kind: "error",
+            text: result.requestId
+              ? `${result.message} Reference: ${result.requestId}`
+              : result.message,
+          });
           return;
         }
 

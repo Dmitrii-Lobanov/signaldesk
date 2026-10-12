@@ -8,6 +8,35 @@ import type {
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 
+function recordApiFailure(
+  operation: "edit_feedback",
+  response: Response,
+): string | undefined {
+  const header = response.headers.get("x-request-id");
+  const requestId =
+    header &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      header,
+    )
+      ? header
+      : undefined;
+
+  const entry = JSON.stringify({
+    event: "api_request_failed",
+    operation,
+    statusCode: response.status,
+    requestId: requestId ?? null,
+  });
+
+  if (response.status >= 500) {
+    console.error(entry);
+  } else {
+    console.warn(entry);
+  }
+
+  return requestId;
+}
+
 export async function createFeedback(
   content: string,
   requestKey: string,
@@ -84,7 +113,12 @@ export async function editFeedback(
   expectedVersion: number,
 ): Promise<
   | { ok: true; version: number }
-  | { ok: false; kind: "conflict" | "error"; message: string }
+  | {
+      ok: false;
+      kind: "conflict" | "error";
+      message: string;
+      requestId?: string;
+    }
 > {
   if (
     typeof content !== "string" ||
@@ -128,10 +162,15 @@ export async function editFeedback(
       },
     );
 
+    const requestId = response.ok
+      ? undefined
+      : recordApiFailure("edit_feedback", response);
+
     if (response.status === 409) {
       return {
         ok: false,
         kind: "conflict",
+        requestId,
         message:
           "Someone changed this feedback after you opened it. Your text is still here. Copy it, then reload to review the latest version.",
       };
@@ -141,6 +180,7 @@ export async function editFeedback(
       return {
         ok: false,
         kind: "error",
+        requestId,
         message:
           response.status === 401
             ? "Your session expired. Please sign in again."
