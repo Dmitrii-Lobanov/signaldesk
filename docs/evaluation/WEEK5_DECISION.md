@@ -2,47 +2,59 @@
 
 ## Decision
 
-Defer AI suggestions. Keep manual classification available. The suggestion
-experiment has not passed the Week 5 quality gate.
+Defer production use until the accept, edit, and reject flows are verified
+in the browser. Keep manual classification available. The two-provider
+evaluation is promising, but the small synthetic set does not establish
+accuracy on real customer feedback.
 
 ## Measurement conditions
 
-- Synthetic labeled cases: 10 tuning and 20 reserved held-out cases.
-- The tuning run used `gemini-3.8-flash` through
-  `classification-gemini-3.8-v1`, with an 8-second adapter timeout and
-  one-second spacing between requests.
-- Choices were Navigation and Reporting; tags were Usability and Export.
-- Results are in `tuning-results.jsonl`. The runner did not record the
-  exact run time.
-- The held-out set was not run, so no held-out accuracy claim is made.
+- 10 synthetic tuning cases and 20 separate held-out cases.
+- Choices: Navigation and Reporting; tags: Usability and Export.
+- Gemini was tried first; Groq was used after a Gemini failure or invalid
+  response. Valid null/empty classifications did not trigger fallback.
+- Model and prompt versions are recorded per case in the result files.
+- The runner used one-second spacing between cases. Exact run timestamps
+  were not recorded.
+- All failures count as incorrect in quality metrics.
+- Results were obtained by calling the server-side adapter directly with
+  synthetic text. This does not measure browser or database behavior.
 
-## Tuning results
+## Earlier Gemini-only tuning run
 
-- Successful responses: 2/10; failures: 8/10.
-- Product-area accuracy, counting failures as incorrect: 2/10 (20%).
-- Tag precision: 2/2 (100%) on the two predicted tags.
-- Tag recall, counting missed tags on failures: 2/8 (25%).
-- Mean elapsed time across all attempts: 3,066 ms. Three failures took
-  approximately the full 8-second timeout.
-- Known estimated cost for the two successful responses: $0.000837.
-  Cost for failed requests is unknown. This is the adapter's paid-tier
-  list-price estimate, not a measured charge.
+`Tuning-results.jsonl` is the earlier Gemini-only baseline: 2/10 successful
+responses and 8/10 failures. Product-area accuracy including failures was
+20%, and tag recall was 25%. A separate diagnostic request on October 12,
+2026 returned Gemini HTTP 503 `UNAVAILABLE`.
 
-The adapter reports a generic failure, so the tuning results do not
-identify every provider error. A separate synthetic diagnostic request
-on October 12, 2026 returned HTTP 503 `UNAVAILABLE` with a
-high-demand message from Gemini.
+## Gemini-to-Groq tuning run
 
-## Safety and product behavior
+`tuning-fallback-results.jsonl` contains 10/10 successful responses, all
+from Groq. Product-area accuracy was 8/10 (80%). Tag precision was 8/9
+(88.9%) and recall was 8/8 (100%). The area mistakes were t04 and t10.
 
-Automated tests cover invalid model output, provider failure, access
-control, suggestion-only behavior, request limits, and stale acceptance.
-Manual classification remains available. Rejection in the browser has
-not yet been demonstrated while the provider is unavailable.
+## Gemini-to-Groq held-out run
 
-## Revisit criteria
+`held-out-fallback-results.jsonl` contains all 20 cases, with no request
+failures. Groq answered 19 cases; Gemini answered 1.
 
-Run a fresh tuning pass when provider availability is stable. Then run
-the reserved held-out cases once, report accuracy and tag precision/
-recall including failures, and demonstrate accept, edit, and reject in
-the app before considering shipment.
+- Product-area accuracy: 17/20 (85%).
+- Tag precision: 14/16 (87.5%).
+- Tag recall: 14/15 (93.3%).
+- Mean latency: 2,909 ms; median: 1,797 ms; maximum: 8,275 ms.
+- Product-area mistakes: h10, h11, h19.
+- Tag false positives: h04 and h11. Missed tag: h19.
+- Known paid-tier estimate: $0.00049425 for the one Gemini response.
+  The adapter records no Groq cost estimate, so total cost is unknown.
+  This estimate is not a measured charge.
+
+## Safety and remaining gate
+
+Automated tests cover invalid model output, provider failure, workspace
+access, suggestion-only behavior, request limits, and stale acceptance.
+Manual classification remains available.
+
+Before considering shipment, verify in the browser that an editor can
+reject a suggestion without changing classification, edit or accept a
+suggestion through the audited save path, and classify manually when both
+providers are unavailable.

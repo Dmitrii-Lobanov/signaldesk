@@ -49,6 +49,8 @@ let totalLatencyMs = 0;
 let knownCostUsd = 0;
 let unknownCostCount = 0;
 
+const modelCounts = {};
+
 for (const item of cases) {
   const started = performance.now();
   let predictedArea = null;
@@ -57,6 +59,9 @@ for (const item of cases) {
 
   try {
     const suggestion = await adapter.suggest(item.text, 1, areas, tags);
+
+    modelCounts[suggestion.model] = (modelCounts[suggestion.model] ?? 0) + 1;
+
     predictedArea = suggestion.productAreaId
       ? areaName.get(suggestion.productAreaId)
       : null;
@@ -122,6 +127,7 @@ console.log(
       split,
       cases: cases.length,
       failures,
+      modelCounts,
       productAreaAccuracy: correctAreas / cases.length,
       tagPrecision:
         truePositive + falsePositive
