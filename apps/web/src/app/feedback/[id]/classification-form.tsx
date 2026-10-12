@@ -18,6 +18,7 @@ type Props = {
   classification: FeedbackClassification;
   areas: ClassificationOption[];
   tags: ClassificationOption[];
+  suggestionsEnabled: boolean;
 };
 
 export function ClassificationForm({
@@ -25,6 +26,7 @@ export function ClassificationForm({
   classification,
   areas,
   tags,
+  suggestionsEnabled,
 }: Props) {
   const router = useRouter();
   const [areaId, setAreaId] = useState(classification.productAreaId ?? "");
@@ -50,8 +52,6 @@ export function ClassificationForm({
 
     startTransition(async () => {
       const result = await requestClassificationSuggestion(feedbackId);
-
-      console.log("suggestion result", result, "feedbackId", feedbackId);
 
       if (!result.ok) {
         setMessage({ kind: "error", text: result.message });
@@ -150,15 +150,15 @@ export function ClassificationForm({
       (id) => tags.find((tag) => tag.id === id)?.name ?? "Unavailable tag",
     ) ?? [];
 
-  console.log("suggestion", suggestion);
-
   return (
     <section aria-labelledby="classify-heading">
       <h2 id="classify-heading">Classify feedback</h2>
 
-      <button type="button" onClick={requestSuggestion} disabled={isPending}>
-        {isPending ? "Working…" : "Suggest classification"}
-      </button>
+      {suggestionsEnabled && (
+        <button type="button" onClick={requestSuggestion} disabled={isPending}>
+          {isPending ? "Working…" : "Suggest classification"}
+        </button>
+      )}
 
       {suggestion && (
         <div className={styles.message} aria-label="Suggested classification">

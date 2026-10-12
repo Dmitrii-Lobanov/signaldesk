@@ -28,9 +28,14 @@ describe('Classification suggestion API (e2e)', () => {
     } = fixture);
   });
 
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+  });
 
   it('suggests without saving, enforces access and limits, and rejects stale acceptance', async () => {
+    vi.stubEnv('AI_SUGGESTIONS_ENABLED', 'true');
+
     const areaId = randomUUID();
     const tagId = randomUUID();
 
@@ -105,9 +110,9 @@ describe('Classification suggestion API (e2e)', () => {
       .get(`${itemUrl}/history`)
       .set('Cookie', editorCookie)
       .expect(200);
-    expect(history.body.map((event: { action: string }) => event.action)).toEqual([
-      'feedback.created',
-    ]);
+    expect(
+      history.body.map((event: { action: string }) => event.action),
+    ).toEqual(['feedback.created']);
 
     await request(app.getHttpServer())
       .patch(itemUrl)
@@ -137,5 +142,27 @@ describe('Classification suggestion API (e2e)', () => {
       .set('Cookie', editorCookie)
       .expect(429);
     expect(adapter).toHaveBeenCalledTimes(5);
+  });
+
+  it('does not call the provider when suggestions are deferred', async () => {
+    vi.stubEnv('AI_SUGGESTIONS_ENABLED', 'false');
+
+    const provider = vi.spyOn(
+      app.get(ClassificationSuggestionAdapter),
+      'suggest',
+    );
+
+    const created = await request(app.getHttpServer())
+      .post(feedbackUrl)
+      .set('Cookie', editorCookie)
+      .send({ content: `${content} deferred` })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post(`${feedbackUrl}/${created.body.id}/classification-suggestion`)
+      .set('Cookie', editorCookie)
+      .expect(503);
+
+    expect(provider).not.toHaveBeenCalled();
   });
 });

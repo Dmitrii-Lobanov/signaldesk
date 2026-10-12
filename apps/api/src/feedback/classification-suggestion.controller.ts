@@ -29,6 +29,13 @@ export class ClassificationSuggestionController {
   ) {
     await this.feedbackService.requireEditor(workspaceId, session.user.id);
 
+    if (process.env.AI_SUGGESTIONS_ENABLED !== 'true') {
+      throw new HttpException(
+        'Suggestions are deferred. Classify manually.',
+        503,
+      );
+    }
+
     const key = `${workspaceId}:${session.user.id}`;
     const now = Date.now();
 

@@ -1,0 +1,10 @@
+{"id":"t01","status":"failed","expectedArea":"Navigation","predictedArea":null,"expectedTags":["Usability"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":8006}
+{"id":"t02","status":"failed","expectedArea":"Reporting","predictedArea":null,"expectedTags":["Usability"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":8001}
+{"id":"t03","status":"failed","expectedArea":"Reporting","predictedArea":null,"expectedTags":["Export"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":8002}
+{"id":"t04","status":"ok","expectedArea":"Navigation","predictedArea":"Navigation","expectedTags":["Usability","Export"],"predictedTags":["Usability","Export"],"model":"gemini-3.8-flash","promptVersion":"classification-gemini-3.8-v1","latencyMs":3762,"inputTokens":234,"outputTokens":119,"estimatedCostUsd":0.00062175}
+{"id":"t05","status":"ok","expectedArea":null,"predictedArea":null,"expectedTags":[],"predictedTags":[],"model":"gemini-3.8-flash","promptVersion":"classification-gemini-3.8-v1","latencyMs":2048,"inputTokens":232,"outputTokens":11,"estimatedCostUsd":0.00021525}
+{"id":"t06","status":"failed","expectedArea":"Reporting","predictedArea":null,"expectedTags":["Export"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":179}
+{"id":"t07","status":"failed","expectedArea":"Navigation","predictedArea":null,"expectedTags":["Usability"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":160}
+{"id":"t08","status":"failed","expectedArea":"Reporting","predictedArea":null,"expectedTags":[],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":186}
+{"id":"t09","status":"failed","expectedArea":null,"predictedArea":null,"expectedTags":[],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":156}
+{"id":"t10","status":"failed","expectedArea":"Navigation","predictedArea":null,"expectedTags":["Export"],"predictedTags":[],"error":"ServiceUnavailableException","latencyMs":163}

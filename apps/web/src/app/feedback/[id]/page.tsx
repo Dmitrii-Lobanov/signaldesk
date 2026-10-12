@@ -278,6 +278,7 @@ export default async function FeedbackDetail({
             classification={classification}
             areas={areas}
             tags={tags}
+            suggestionsEnabled={process.env.AI_SUGGESTIONS_ENABLED === "true"}
           />
         )}
       </main>
