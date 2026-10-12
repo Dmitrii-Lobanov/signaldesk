@@ -8,12 +8,17 @@ if (split !== "tuning" && split !== "held-out") {
     "Use: node docs/evaluation/run-classification.mjs tuning|held-out",
   );
 }
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY is required");
+if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY) {
+  throw new Error("GEMINI_API_KEY or GROQ_API_KEY is required");
 }
 
 const inputPath = new URL(`./${split}.jsonl`, import.meta.url);
-const outputPath = new URL(`./${split}-results.jsonl`, import.meta.url);
+
+const outputPath = new URL(
+  `./${split}-fallback-results.jsonl`,
+  import.meta.url,
+);
+
 if (existsSync(outputPath)) {
   throw new Error(`Results already exist: ${outputPath.pathname}`);
 }
