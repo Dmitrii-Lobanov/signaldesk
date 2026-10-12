@@ -260,7 +260,7 @@ export async function requestClassificationSuggestion(
         method: "POST",
         headers: { Cookie: cookie },
         cache: "no-store",
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(15000),
       },
     );
 
@@ -276,7 +276,7 @@ export async function requestClassificationSuggestion(
                 ? "This feedback item is unavailable."
                 : response.status === 429
                   ? "Suggestion limit reached. Classify manually or try later."
-                  : "Suggestions are unavailable. You can classify manually.",
+                  : "Suggestions are unavailable. Choose a product area and tags below to classify manually.",
       };
     }
 
@@ -285,7 +285,8 @@ export async function requestClassificationSuggestion(
   } catch {
     return {
       ok: false,
-      message: "Suggestions are unavailable. You can classify manually.",
+      message:
+        "Suggestions are unavailable. Choose a product area and tags below to classify manually.",
     };
   }
 }
