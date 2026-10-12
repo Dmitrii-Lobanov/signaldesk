@@ -2,10 +2,15 @@
 
 ## Decision
 
-Defer production use until the accept, edit, and reject flows are verified
-in the browser. Keep manual classification available. The two-provider
-evaluation is promising, but the small synthetic set does not establish
-accuracy on real customer feedback.
+Week 5 decision: defer production AI suggestions. Keep manual classification
+available. Suggestions remain available only when explicitly enabled with
+`AI_SUGGESTIONS_ENABLED=true`.
+
+The two-provider evaluation completed without held-out request failures, but
+20 synthetic held-out cases do not establish accuracy on real customer
+feedback. Browser verification of accept, edit, reject, and manual
+classification during a provider outage is required before production
+enablement.
 
 ## Measurement conditions
 
@@ -48,13 +53,15 @@ failures. Groq answered 19 cases; Gemini answered 1.
   The adapter records no Groq cost estimate, so total cost is unknown.
   This estimate is not a measured charge.
 
-## Safety and remaining gate
+## Safety and release gate
 
 Automated tests cover invalid model output, provider failure, workspace
 access, suggestion-only behavior, request limits, and stale acceptance.
 Manual classification remains available.
 
-Before considering shipment, verify in the browser that an editor can
-reject a suggestion without changing classification, edit or accept a
-suggestion through the audited save path, and classify manually when both
-providers are unavailable.
+Before enabling production suggestions, verify in the browser that an editor
+can reject without changing classification, edit or accept through the
+audited save path, and classify manually when both providers are unavailable.
+Evaluate accuracy on representative real feedback and decide an acceptable
+quality threshold. These are release gates, not unfinished Week 5 evaluation
+work.
