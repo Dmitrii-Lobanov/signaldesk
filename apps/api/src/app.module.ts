@@ -7,6 +7,7 @@ import { FeedbackModule } from './feedback/feedback.module.js';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { WorkspaceMembership } from './workspaces/workspace-membership.entity.js';
 import { auth } from './auth/auth.js';
+import { HealthController } from './operations/health.controller.js';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { auth } from './auth/auth.js';
     AuthModule.forRoot({ auth }),
     FeedbackModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {}
