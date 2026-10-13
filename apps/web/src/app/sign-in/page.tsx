@@ -24,7 +24,25 @@ export default function SignInPage() {
       });
 
       if (!response.ok) {
-        setMessage("Sign-in failed. Check your email and password.");
+        const candidate = response.headers.get("x-request-id");
+
+        const reference =
+          candidate &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            candidate,
+          )
+            ? ` Reference: ${candidate}`
+            : "";
+
+        const explanation =
+          response.status === 429
+            ? "Too many sign-in attempts. Wait a minute, then try again."
+            : response.status >= 500
+              ? "Sign-in is unavailable. Please try again."
+              : "Sign-in failed. Check your email and password.";
+
+        setMessage(`${explanation}${reference}`);
+
         return;
       }
 

@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 type AuthContext = {
   params: Promise<{ path: string[] }>;
 };
@@ -6,6 +8,7 @@ async function forwardAuth(
   request: Request,
   context: AuthContext,
 ): Promise<Response> {
+  const requestId = randomUUID();
   const { path } = await context.params;
   const apiBaseUrl = (
     process.env.API_BASE_URL ?? "http://localhost:3001"
@@ -29,12 +32,38 @@ async function forwardAuth(
           : await request.arrayBuffer(),
       redirect: "manual",
       cache: "no-store",
+      signal: AbortSignal.timeout(10000),
     });
 
-    const responseHeaders = new Headers();
-    for (const name of ["content-type", "cache-control", "location"]) {
-      const value = upstream.headers.get(name);
+    const candidate = upstream.headers.get("x-request-id");
+    const apiRequestId =
+      candidate &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        candidate,
+      )
+        ? candidate
+        : null;
 
+    if (!upstream.ok) {
+      console.warn(
+        JSON.stringify({
+          event: "auth_proxy_failed",
+          requestId,
+          apiRequestId,
+          statusCode: upstream.status,
+          failureKind: "http",
+        }),
+      );
+    }
+
+    const responseHeaders = new Headers({ "x-request-id": requestId });
+    for (const name of [
+      "content-type",
+      "cache-control",
+      "location",
+      "retry-after",
+    ]) {
+      const value = upstream.headers.get(name);
       if (value) responseHeaders.set(name, value);
     }
 
@@ -47,9 +76,22 @@ async function forwardAuth(
       headers: responseHeaders,
     });
   } catch {
+    console.error(
+      JSON.stringify({
+        event: "auth_proxy_failed",
+        requestId,
+        apiRequestId: null,
+        statusCode: 502,
+        failureKind: "transport",
+      }),
+    );
+
     return Response.json(
       { message: "Authentication service is unavailable" },
-      { status: 502 },
+      {
+        status: 502,
+        headers: { "x-request-id": requestId },
+      },
     );
   }
 }
