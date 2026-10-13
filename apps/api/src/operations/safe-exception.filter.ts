@@ -6,6 +6,24 @@ import { QueryFailedError } from 'typeorm';
 @Catch()
 export class SafeExceptionFilter extends BaseExceptionFilter {
   override catch(exception: unknown, host: ArgumentsHost) {
+    // Parser errors may contain the submitted body. Convert known failures
+    // into fixed HTTP messages before logging or returning a response.
+    if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'type' in exception &&
+      'status' in exception
+    ) {
+      if (exception.type === 'entity.too.large' && exception.status === 413) {
+        exception = new HttpException('Request body too large', 413);
+      } else if (
+        exception.type === 'entity.parse.failed' &&
+        exception.status === 400
+      ) {
+        exception = new HttpException('Invalid JSON body', 400);
+      }
+    }
+
     const context = host.switchToHttp();
     const request = context.getRequest<Request>();
     const response = context.getResponse<Response>();

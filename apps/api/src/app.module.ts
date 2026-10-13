@@ -27,7 +27,17 @@ import { HealthController } from './operations/health.controller.js';
       }),
     }),
     TypeOrmModule.forFeature([WorkspaceMembership]),
-    AuthModule.forRoot({ auth }),
+    AuthModule.forRoot({
+      auth,
+      bodyParser: {
+        json: {
+          limit: '32kb',
+        },
+        urlencoded: {
+          enabled: false,
+        },
+      },
+    }),
     FeedbackModule,
   ],
   controllers: [AppController, HealthController],
