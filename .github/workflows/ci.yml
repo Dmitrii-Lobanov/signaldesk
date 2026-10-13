@@ -74,6 +74,9 @@ jobs:
       - name: Test API with PostgreSQL
         run: npm run test:e2e --workspace=apps/api
 
+      - name: Test web actions
+        run: npm run test:unit --workspace=apps/web
+
       - name: Test web auth proxy
         run: node --test apps/web/test/auth-proxy.test.mjs
 
