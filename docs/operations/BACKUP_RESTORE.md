@@ -160,3 +160,18 @@ docker rm -v signaldesk-restore-check
 
 Keep the source test container and backup until any remaining checks finish.
 No development container or volume is removed by this procedure.
+
+## Application verification
+
+The restored database was exposed only on loopback port 5547 using
+`compose.ops-restore.yaml` and Compose project `signaldesk-ops-restore`.
+
+Verification uses the restored `signaldesk_test` database:
+
+- API integration suite: pass.
+- Synthetic recovery marker, version 1: pass.
+- Separate API startup on port 3202: pass.
+- `/health/live` and `/health/ready`: 200.
+- Response request IDs matched API logs: pass.
+
+Browser recovery and protected deployment recovery remain unverified.
