@@ -21,6 +21,23 @@ export const auth = betterAuth({
   database: new Pool({ connectionString: databaseUrl }),
   secret,
   baseURL,
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: [],
+    },
+  },
+  rateLimit: {
+    enabled: process.env.NODE_ENV === 'production',
+    storage: 'memory',
+    window: 10,
+    max: 100,
+    customRules: {
+      '/sign-in/email': {
+        window: 60,
+        max: 5,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,
