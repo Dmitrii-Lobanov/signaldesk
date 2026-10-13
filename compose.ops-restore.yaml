@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: signaldesk_test
+      POSTGRES_USER: signaldesk
+      POSTGRES_PASSWORD: restore-test-only-password
+    ports:
+      - "127.0.0.1:5547:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signaldesk -d signaldesk_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
