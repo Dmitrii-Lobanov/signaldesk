@@ -229,3 +229,9 @@ disabled until the Week 2 authorization gate passes.
 When finished working, stop the EC2 instance in AWS to conserve Free plan
 credits. Starting it again may assign a new public IP; use the new IP in the
 SSH command and tunnel.
+
+## Recovery rehearsal
+
+The [isolated backup and restore runbook](operations/BACKUP_RESTORE.md)
+records the synthetic `signaldesk_test` rehearsal and its verification limits.
+Protected deployment recovery remains a separate release check.
