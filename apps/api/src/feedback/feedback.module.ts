@@ -10,6 +10,7 @@ import { ClassificationController } from './classification.controller.js';
 import { Feedback } from './entity/feedback.entity.js';
 import { ClassificationSuggestionAdapter } from './classification-suggestion.adapter.js';
 import { ClassificationSuggestionController } from './classification-suggestion.controller.js';
+import { FeedbackRateLimitGuard } from '../operations/feedback-rate-limit.guard.js';
 
 @Module({
   imports: [
@@ -26,6 +27,10 @@ import { ClassificationSuggestionController } from './classification-suggestion.
     ClassificationController,
     ClassificationSuggestionController,
   ],
-  providers: [FeedbackService, ClassificationSuggestionAdapter],
+  providers: [
+    FeedbackService,
+    ClassificationSuggestionAdapter,
+    FeedbackRateLimitGuard,
+  ],
 })
 export class FeedbackModule {}

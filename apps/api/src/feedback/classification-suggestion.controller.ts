@@ -4,11 +4,14 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { ClassificationSuggestionAdapter } from './classification-suggestion.adapter.js';
 import { FeedbackService } from './feedback.service.js';
+import { FeedbackRateLimitGuard } from '../operations/feedback-rate-limit.guard.js';
 
+@UseGuards(FeedbackRateLimitGuard)
 @Controller('workspaces/:workspaceId/feedback')
 export class ClassificationSuggestionController {
   private readonly requests = new Map<

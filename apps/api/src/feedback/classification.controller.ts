@@ -8,6 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { ClassificationOptionResponseDto } from './dto/classification-option-response.dto.js';
 import { FeedbackService } from './feedback.service.js';
+import { FeedbackRateLimitGuard } from '../operations/feedback-rate-limit.guard.js';
 
 @ApiTags('classification')
 @Controller('workspaces/:workspaceId')

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
@@ -31,8 +32,10 @@ import { FeedbackPageResponseDto } from './dto/feedback-page-response.dto.js';
 import { ListFeedbackQueryDto } from './dto/list-feedback-query.dto.js';
 import { AuditEventResponseDto } from './dto/audit-event-response.dto.js';
 import { EditFeedbackDto } from './dto/edit-feedback.dto.js';
+import { FeedbackRateLimitGuard } from '../operations/feedback-rate-limit.guard.js';
 
 @ApiTags('feedback')
+@UseGuards(FeedbackRateLimitGuard)
 @Controller('workspaces/:workspaceId/feedback')
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
