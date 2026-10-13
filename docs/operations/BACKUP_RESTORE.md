@@ -23,8 +23,11 @@ On October 13, 2026, the developer reported completing the rehearsal:
 Command outputs and elapsed recovery time were not recorded in this document.
 This is a developer-reported result, not independent verification.
 
-Application behavior against restored data, protected deployment recovery,
-and automated backup scheduling remain unverified.
+The [application verification](#application-verification) below records passing
+API integration tests, the restored synthetic marker, separate API startup,
+HTTP 200 liveness/readiness checks, and matching response request IDs in logs.
+These are developer-recorded results. Browser use against the restored database,
+protected deployment recovery, and automated backup scheduling remain unverified.
 
 ## Prepare the source
 
@@ -146,8 +149,9 @@ diff -u "$recovery_dir/source-migrations.txt" \
 
 Expected: no differences.
 
-Before calling application recovery complete, run the API against the restored
-test database and verify readiness and the authenticated feedback workflow.
+The API integration and readiness checks against restored data are recorded
+under [application verification](#application-verification). An authenticated
+browser workflow against restored data remains unverified.
 
 ## Cleanup
 

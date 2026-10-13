@@ -1,0 +1,4 @@
+NAME                               IMAGE                          COMMAND                  SERVICE    CREATED              STATUS                          PORTS
+signaldesk-ops-deploy-api-1        signaldesk-api:ops-rehearsal   "docker-entrypoint.s…"   api        About a minute ago   Up About a minute (unhealthy)   3001/tcp
+signaldesk-ops-deploy-postgres-1   postgres:18-alpine             "docker-entrypoint.s…"   postgres   3 hours ago          Up 3 hours (healthy)            5432/tcp
+signaldesk-ops-deploy-web-1        signaldesk-web:ops-rehearsal   "docker-entrypoint.s…"   web        About a minute ago   Up About a minute               127.0.0.1:3300->3000/tcp

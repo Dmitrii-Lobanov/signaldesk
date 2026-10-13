@@ -1,0 +1,2 @@
+web-1  | 2026-10-13T19:58:02.463327218Z {"event":"auth_proxy_failed","requestId":"0fbf748b-7883-4ec6-83c4-0e1bedec7970","apiRequestId":null,"statusCode":502,"failureKind":"transport"}
+web-1  | 2026-10-13T19:58:48.029808920Z {"event":"auth_proxy_failed","requestId":"f91c65a5-1f2f-452e-bfb2-f5602a11793b","apiRequestId":"0ec0216a-7df4-4fa7-b5b4-990e6e24cc16","statusCode":401,"failureKind":"http"}
