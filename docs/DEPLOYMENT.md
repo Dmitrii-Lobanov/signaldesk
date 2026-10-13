@@ -235,3 +235,6 @@ SSH command and tunnel.
 The [isolated backup and restore runbook](operations/BACKUP_RESTORE.md)
 records the synthetic `signaldesk_test` rehearsal and its verification limits.
 Protected deployment recovery remains a separate release check.
+
+The [deployment recovery rehearsal](operations/DEPLOYMENT_RECOVERY.md)
+covers an isolated API configuration failure and recovery using a retained image.
