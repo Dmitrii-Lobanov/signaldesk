@@ -11,6 +11,12 @@ if (!databaseUrl || !secret || !baseURL) {
   );
 }
 
+if (secret.length < 32 || secret.startsWith('replace-')) {
+  throw new Error(
+    'BETTER_AUTH_SECRET must be a configured secret of at least 32 characters',
+  );
+}
+
 export const auth = betterAuth({
   database: new Pool({ connectionString: databaseUrl }),
   secret,
