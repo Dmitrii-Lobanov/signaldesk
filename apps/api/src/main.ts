@@ -1,8 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { requestLogging } from './operations/request-logging.js';
+import { SafeExceptionFilter } from './operations/safe-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,9 @@ async function bootstrap() {
   app.use(requestLogging());
 
   app.enableShutdownHooks();
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SafeExceptionFilter(httpAdapter));
 
   app.useGlobalPipes(
     new ValidationPipe({
