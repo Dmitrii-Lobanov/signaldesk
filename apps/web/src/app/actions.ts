@@ -37,6 +37,14 @@ function recordApiFailure(
   return requestId;
 }
 
+function rateLimitMessage(response: Response): string {
+  const value = response.headers.get("retry-after");
+  const seconds = value && /^\d{1,2}$/.test(value) ? Number(value) : 60;
+  const wait = seconds >= 1 && seconds <= 60 ? seconds : 60;
+
+  return `Too many requests. Your input is still here. Wait ${wait} seconds, then try again.`;
+}
+
 export async function createFeedback(
   content: string,
   requestKey: string,
@@ -84,6 +92,13 @@ export async function createFeedback(
     );
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return {
+          ok: false,
+          message: rateLimitMessage(response),
+        };
+      }
+
       const message =
         response.status === 401
           ? "Your session expired. Please sign in again."
@@ -166,6 +181,15 @@ export async function editFeedback(
       ? undefined
       : recordApiFailure("edit_feedback", response);
 
+    if (response.status === 429) {
+      return {
+        ok: false,
+        kind: "error",
+        requestId,
+        message: rateLimitMessage(response),
+      };
+    }
+
     if (response.status === 409) {
       return {
         ok: false,
@@ -236,6 +260,13 @@ export async function saveFeedbackClassification(
     );
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return {
+          ok: false,
+          message: rateLimitMessage(response),
+        };
+      }
+
       const message =
         response.status === 401
           ? "Your session expired. Please sign in again."
