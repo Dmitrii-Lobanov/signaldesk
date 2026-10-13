@@ -1,4 +1,10 @@
-import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import {
   ApiForbiddenResponse,
@@ -12,6 +18,7 @@ import { FeedbackRateLimitGuard } from '../operations/feedback-rate-limit.guard.
 
 @ApiTags('classification')
 @Controller('workspaces/:workspaceId')
+@UseGuards(FeedbackRateLimitGuard)
 export class ClassificationController {
   constructor(private readonly feedbackService: FeedbackService) {}
 
