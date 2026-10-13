@@ -1,3 +1,9 @@
+x-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgres:18-alpine
@@ -13,6 +19,7 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    logging: *bounded-logging
 
   api:
     image: signaldesk-api:local
@@ -58,6 +65,7 @@ services:
       - node
       - apps/api/scripts/seed-dev-accounts.mjs
       - --protected-deploy
+    logging: *bounded-logging
 
   web:
     build:
@@ -73,6 +81,7 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
+    logging: *bounded-logging
 
 volumes:
   postgres_data:
