@@ -40,6 +40,24 @@ export function ClassificationForm({
     text: string;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [lastClassification, setLastClassification] = useState(classification);
+
+  if (classification.version !== lastClassification.version) {
+    const unchangedSelection =
+      areaId === (lastClassification.productAreaId ?? "") &&
+      [...tagIds].sort().join(",") ===
+        [...lastClassification.tagIds].sort().join(",");
+
+    setLastClassification(classification);
+
+    // Refresh untouched controls. Preserve drafts and their original version
+    // so a newer server version cannot silently authorize stale choices.
+    if (unchangedSelection && suggestion === null && !isPending) {
+      setAreaId(classification.productAreaId ?? "");
+      setTagIds(classification.tagIds);
+      setVersion(classification.version);
+    }
+  }
 
   function toggleTag(tagId: string, checked: boolean) {
     setTagIds((current) =>

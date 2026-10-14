@@ -242,9 +242,6 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
     version: 2,
   });
 
-  // Begin classification from the current persisted feedback version.
-  await page.reload();
-
   await page.getByLabel("Product area", { exact: true }).selectOption(areaId);
   await page.getByRole("checkbox", { name: tagName, exact: true }).check();
   await page
