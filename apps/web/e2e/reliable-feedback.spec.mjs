@@ -258,6 +258,24 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
     classification.getByText(`Tags: ${tagName}`, { exact: true }),
   ).toBeVisible();
 
+  // Classification refreshes the untouched edit form's version.
+  // Saving unchanged text succeeds without creating another edit event.
+  await page.getByRole("textbox", { name: "Feedback text" }).fill(edited);
+  await page.getByRole("button", { name: "Save edit" }).click();
+  await expect(
+    page.getByRole("status").filter({
+      hasText: "Feedback edit saved.",
+    }),
+  ).toBeVisible();
+
+  const editEvents = await pool.query(
+    `SELECT id FROM audit_events
+     WHERE workspace_id = $1 AND feedback_id = $2
+       AND action = 'feedback.edited'`,
+    [workspaceId, createdFeedbackId],
+  );
+  expect(editEvents.rows).toHaveLength(1);
+
   // Verify persistence after a full reload.
   await page.reload();
   await expect(

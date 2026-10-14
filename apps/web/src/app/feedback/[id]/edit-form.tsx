@@ -24,6 +24,25 @@ export function EditForm({
     text: string;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [lastFeedback, setLastFeedback] = useState({
+    content: initialContent,
+    version: initialVersion,
+  });
+
+  if (initialVersion !== lastFeedback.version) {
+    const unchangedContent = content === lastFeedback.content;
+
+    setLastFeedback({
+      content: initialContent,
+      version: initialVersion,
+    });
+
+    // Refresh untouched text while preserving drafts and their old version.
+    if (unchangedContent && !isPending) {
+      setContent(initialContent);
+      setVersion(initialVersion);
+    }
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
