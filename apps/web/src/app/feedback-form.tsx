@@ -12,6 +12,9 @@ type Message = {
 
 export function FeedbackForm() {
   const router = useRouter();
+
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
   const [content, setContent] = useState("");
   const [message, setMessage] = useState<Message | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -22,6 +25,9 @@ export function FeedbackForm() {
 
     if (!content.trim()) {
       setMessage({ kind: "error", text: "Feedback must not be empty." });
+
+      contentRef.current?.focus();
+
       return;
     }
 
@@ -70,6 +76,11 @@ export function FeedbackForm() {
         maxLength={5000}
         required
         rows={5}
+        ref={contentRef}
+        aria-invalid={message?.kind === "error" ? true : undefined}
+        aria-describedby={
+          message?.kind === "error" ? "feedback-error" : undefined
+        }
       />
 
       <button type="submit" disabled={isPending}>
@@ -77,7 +88,10 @@ export function FeedbackForm() {
       </button>
 
       {message && (
-        <p role={message.kind === "error" ? "alert" : "status"}>
+        <p
+          id={message.kind === "error" ? "feedback-error" : undefined}
+          role={message.kind === "error" ? "alert" : "status"}
+        >
           {message.text}
         </p>
       )}
