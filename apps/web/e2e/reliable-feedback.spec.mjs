@@ -126,8 +126,31 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL("http://localhost:3100/");
 
-  await page.getByRole("textbox", { name: "Customer feedback" }).fill(original);
-  await page.getByRole("button", { name: "Save feedback" }).click();
+  const feedbackInput = page.getByRole("textbox", {
+    name: "Customer feedback",
+  });
+  const saveFeedback = page.getByRole("button", { name: "Save feedback" });
+
+  // Submit empty feedback using the keyboard.
+  await feedbackInput.focus();
+  await page.keyboard.press("Tab");
+  await expect(saveFeedback).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  await expect(feedbackInput).toBeFocused();
+  await expect(feedbackInput).toHaveAttribute("aria-invalid", "true");
+  await expect(feedbackInput).toHaveAccessibleDescription(
+    "Feedback must not be empty.",
+  );
+
+  // Correcting the input clears the error and permits saving.
+  await feedbackInput.fill(original);
+  await expect(feedbackInput).not.toHaveAttribute("aria-invalid");
+  await expect(feedbackInput).not.toHaveAttribute("aria-describedby");
+  await page.keyboard.press("Tab");
+  await expect(saveFeedback).toBeFocused();
+  await page.keyboard.press("Enter");
+
   await expect(
     page.getByRole("status").filter({ hasText: "Feedback saved." }),
   ).toBeVisible();
