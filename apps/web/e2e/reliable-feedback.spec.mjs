@@ -19,6 +19,11 @@ const original = `Browser journey original ${runId}`;
 const edited = `Browser journey edited ${runId}`;
 const stale = `Browser journey stale ${runId}`;
 
+const areaId = randomUUID();
+const tagId = randomUUID();
+const areaName = `Browser reporting ${runId}`;
+const tagName = `Browser usability ${runId}`;
+
 const pool = new Pool({ connectionString: databaseUrl });
 let editorUserId;
 let createdFeedbackId;
@@ -29,6 +34,17 @@ test.beforeAll(async () => {
      VALUES ($1, 'Browser test workspace')
      ON CONFLICT (id) DO NOTHING`,
     [workspaceId],
+  );
+
+  await pool.query(
+    `INSERT INTO product_areas (id, workspace_id, name)
+     VALUES ($1, $2, $3)`,
+    [areaId, workspaceId, areaName],
+  );
+  await pool.query(
+    `INSERT INTO tags (id, workspace_id, name)
+     VALUES ($1, $2, $3)`,
+    [tagId, workspaceId, tagName],
   );
 
   // Public sign-up stays disabled. Only this test fixture creates users.
@@ -106,6 +122,9 @@ test.afterAll(async () => {
         ids,
       ]);
     }
+
+    await pool.query("DELETE FROM tags WHERE id = $1", [tagId]);
+    await pool.query("DELETE FROM product_areas WHERE id = $1", [areaId]);
 
     await pool.query('DELETE FROM "user" WHERE "email" = ANY($1::text[])', [
       [editorEmail, viewerEmail],
@@ -223,6 +242,49 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
     version: 2,
   });
 
+  // Begin classification from the current persisted feedback version.
+  await page.reload();
+
+  await page.getByLabel("Product area", { exact: true }).selectOption(areaId);
+  await page.getByRole("checkbox", { name: tagName, exact: true }).check();
+  await page
+    .getByRole("button", { name: "Save manual classification" })
+    .click();
+
+  const classification = page.locator(
+    'section[aria-labelledby="classification-heading"]',
+  );
+  await expect(
+    classification.getByText(`Product area: ${areaName}`, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    classification.getByText(`Tags: ${tagName}`, { exact: true }),
+  ).toBeVisible();
+
+  // Verify persistence after a full reload.
+  await page.reload();
+  await expect(
+    classification.getByText(`Product area: ${areaName}`, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    classification.getByText(`Tags: ${tagName}`, { exact: true }),
+  ).toBeVisible();
+
+  const classifiedEvents = await pool.query(
+    `SELECT actor_user_id, "before", "after"
+     FROM audit_events
+     WHERE workspace_id = $1 AND feedback_id = $2
+       AND action = 'feedback.classified'`,
+    [workspaceId, createdFeedbackId],
+  );
+  expect(classifiedEvents.rows).toEqual([
+    {
+      actor_user_id: editorUserId,
+      before: { productAreaId: null, tagIds: [], version: 2 },
+      after: { productAreaId: areaId, tagIds: [tagId], version: 3 },
+    },
+  ]);
+
   // A viewer can inspect the result and actor, but cannot edit it.
   const viewerContext = await browser.newContext();
   try {
@@ -244,6 +306,21 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
     ).toHaveCount(1);
     await expect(
       viewerPage.getByRole("button", { name: "Save edit" }),
+    ).toHaveCount(0);
+
+    const viewerClassification = viewerPage.locator(
+      'section[aria-labelledby="classification-heading"]',
+    );
+    await expect(
+      viewerClassification.getByText(`Product area: ${areaName}`, {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      viewerClassification.getByText(`Tags: ${tagName}`, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      viewerPage.getByRole("button", { name: "Save manual classification" }),
     ).toHaveCount(0);
   } finally {
     await viewerContext.close();
