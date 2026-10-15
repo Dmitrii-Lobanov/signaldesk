@@ -1,0 +1,5 @@
+services:
+  api:
+    image: signaldesk-api:demo-local
+  web:
+    image: signaldesk-web:demo-local
