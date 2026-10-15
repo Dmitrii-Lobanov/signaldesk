@@ -1,10 +1,22 @@
 # SignalDesk
 
-**A product-feedback intelligence workspace that turns scattered customer signals into evidence-backed product decisions.**
+**An authenticated feedback inbox for capturing, finding, manually classifying,
+and editing synthetic customer feedback with workspace permissions and audit
+history.**
 
-SignalDesk is a portfolio project for demonstrating senior product-frontend judgment, end-to-end TypeScript ownership, and disciplined AI-assisted engineering. It is designed as a realistic B2B SaaS product—not a CRUD tutorial—and will be built in public through small, testable milestones.
+SignalDesk is a TypeScript portfolio project built with Next.js, NestJS,
+PostgreSQL, and TypeORM. The implemented slice focuses on a reliable manual
+feedback workflow.
 
-> Status: Week 2 authentication and workspace permissions work locally and pass CI. Verification of the updated protected EC2 deployment is still pending.
+> Status: Local implementation and verification through Week 7 are recorded.
+> The protected development deployment is available through restricted access;
+> a public demo is not yet released. AI suggestions remain disabled.
+> Participant recruitment was unavailable, so usability evidence comes from
+> a labeled developer walkthrough. Protected-deployment verification
+> limitations remain documented.
+
+See [Week 7 findings](docs/operations/WEEK7_HARDENING.md) and
+[Week 6 verification limits](docs/operations/WEEK6_CLOSEOUT.md%3A).
 
 ## Run locally
 
