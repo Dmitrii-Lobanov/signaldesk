@@ -55,6 +55,11 @@ env -u API_BASE_URL npm run dev --workspace=apps/web
 
 Open `http://localhost:3000/sign-in`. Sign in with `DEV_EDITOR_EMAIL` and `DEV_EDITOR_PASSWORD` from `.env` to create feedback. Sign out, then use the viewer credentials to confirm the feedback is visible without a create form. The web app uses `http://localhost:3001` for the API by default. API documentation is available at `http://localhost:3001/api`.
 
+`BETTER_AUTH_URL` must exactly match the browser origin, including its port.
+If the web app runs on port 3002, use `http://localhost:3002` and restart
+the API after changing the setting. Protected deployment configuration
+is separate; see the deployment runbook.
+
 To verify persistence, stop **only the API** with Ctrl-C, start it again, and reload the web page. The feedback should still be there because PostgreSQL stores it in the Docker volume.
 
 For API integration tests, use the separate `signaldesk_test` database. Never point those tests at the development database. To verify the protected EC2 deployment, follow [the deployment runbook](docs/DEPLOYMENT.md).
@@ -63,22 +68,24 @@ For API integration tests, use the separate `signaldesk_test` database. Never po
 
 Customer feedback arrives through support conversations, sales notes, surveys, reviews, and internal messages. Product teams often lose the context, duplicate the same request, or prioritize the loudest customer rather than the strongest evidence.
 
-SignalDesk provides one workflow to:
+The implemented workflow supports:
 
-1. Capture feedback from multiple sources.
-2. Classify it by product area, customer, sentiment, and theme.
-3. Group related feedback into opportunities.
-4. Prioritize opportunities using visible evidence.
-5. Record decisions and follow the outcome after release.
+1. Manually capture synthetic feedback.
+2. Find records through search, product-area/tag filters, and pagination.
+3. Inspect and manually classify feedback by product area and tags.
+4. Edit text with stale-write protection and inspect audit history.
+5. Enforce editor/viewer permissions and workspace boundaries through the API.
 
 ```mermaid
 flowchart LR
-    A["Customer signals"] --> B["Inbox and classification"]
-    B --> C["Related feedback clusters"]
-    C --> D["Evidence-backed opportunity"]
-    D --> E["Prioritization and decision"]
-    E --> F["Outcome tracking"]
+    A["Manual capture"] --> B["Search and filter"]
+    B --> C["Inspect and classify"]
+    C --> D["Edit and inspect history"]
 ```
+
+CSV imports, customer/sentiment classification, clustering, opportunities,
+prioritization, decisions, and outcome tracking are future product scope.
+AI suggestions remain deferred and disabled.
 
 ## Who it is for
 
@@ -87,29 +94,30 @@ flowchart LR
 - Founders who need a lightweight view of emerging demand.
 - Support, success, and sales teams who want feedback to reach product teams.
 
-## What makes this a senior-level portfolio project
+## Engineering evidence
 
-The project is intended to demonstrate more than framework knowledge:
+- API-enforced editor/viewer permissions and workspace isolation.
+- Transactional audit events, idempotent capture, and stale-edit rejection.
+- PostgreSQL integration tests and a critical Playwright browser journey.
+- Developer-reported keyboard and zoom checks, with participant limitations.
+- A reproducible inbox-query investigation supporting a pagination index.
+- Correlated request logs, readiness checks, and isolated recovery rehearsals.
 
-- Complex, accessible product interfaces: inboxes, filters, tables, forms, command flows, and evidence views.
-- Clear frontend, API, data, authorization, and background-job boundaries.
-- Reliability under optimistic updates, duplicate events, retries, and partial failures.
-- Measured performance, accessibility, observability, and test coverage.
-- Written product reasoning, architecture decisions, trade-offs, and outcome metrics.
+See [Week 7 evidence](docs/operations/WEEK7_HARDENING.md) for measured
+results and limitations.
 
-## Planned technical shape
+## Implemented stack
 
-- **Web:** Next.js, React, TypeScript
-- **API:** NestJS, TypeScript, REST with an OpenAPI contract
-- **Data:** PostgreSQL with TypeORM, selected in [ADR 0003](docs/decisions/0003-use-typeorm-for-persistence.md)
-- **Async work:** Redis and BullMQ after the synchronous MVP
-- **Live updates:** polling or Server-Sent Events where one-way status updates are sufficient; WebSockets only for a demonstrated bidirectional requirement
-- **Quality:** React Testing Library, Vitest, Playwright, accessibility checks, and contract tests
-- **Operations:** Docker Compose locally, CI on GitHub Actions, structured logs, error monitoring, and product analytics
+- **Web:** Next.js, React, TypeScript.
+- **API:** NestJS, REST, and an OpenAPI-derived frontend contract.
+- **Data:** PostgreSQL and reviewed TypeORM migrations.
+- **Verification:** Vitest, PostgreSQL integration tests, and Playwright.
+- **Operations:** Docker Compose, GitHub Actions, correlated logs, bounded
+  frontend failure reporting, and separate liveness/readiness checks.
 
-The stack is a plan, not a claim about completed functionality. Each material decision will be captured in an ADR.
-
-The eight-week roadmap targets a credible portfolio slice, not every item in the complete MVP. The roadmap controls delivery order; the learning plan supplies only the material needed for the active milestone.
+Monitoring is operator-reviewed. External alerts and durable log collection
+are deferred. Redis, BullMQ, live updates, and product analytics are outside
+the implemented slice.
 
 ## Documentation
 
