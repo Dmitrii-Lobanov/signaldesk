@@ -2,9 +2,10 @@
 
 ## Status
 
-Implementation and automated hardening checks completed.
-The Week 7 gate remains open pending participant or structured-walkthrough
-observations and manual accessibility findings.
+Close Week 7 hardening using the roadmap's structured-walkthrough fallback.
+Automated verification, developer-reported manual findings, resulting fixes,
+and a reproducible performance investigation are recorded below.
+External participant validation remains unavailable.
 
 ## Observations and decisions
 
@@ -51,6 +52,14 @@ exec -T postgres psql -U signaldesk -d signaldesk_test \
 -v ON_ERROR_STOP=1 < docs/operations/evidence/week7/inbox-performance.sql
 ```
 
+Script: [inbox-performance.sql](evidence/week7/inbox-performance.sql).
+Results: [inbox-performance.txt](evidence/week7/inbox-performance.txt).
+
+Limitations: five measured executions per condition in one local session.
+This measures database execution, not browser latency, concurrent load,
+search/filter performance, or production behavior. The index adds storage
+and write overhead.
+
 ## Verification
 
 - Web lint, TypeScript, formatting, and 14 unit tests passed.
@@ -61,12 +70,26 @@ exec -T postgres psql -U signaldesk -d signaldesk_test \
   manual classification persistence and audit evidence, viewer restrictions,
   and same-page form-version refresh.
 
-## Outstanding evidence
+## Developer structured walkthrough — October 15, 2026
 
-- Participant availability and honestly labeled session observations.
-- Manual keyboard, focus, announcements, and 200% zoom findings.
-- Preservation of the performance command and full measured outputs.
+Other participants were unavailable. The developer reported completing
+the following checks using synthetic feedback:
 
-AI remains disabled. Week 6 operational verification limitations remain
-unchanged. No user-validation or Week 7 completion claim is made.
-```
+- Keyboard capture → classify → edit → classify without reloading:
+  passed, with visible focus and clear save confirmations.
+- Inbox search/filter navigation, refresh, and Back/Forward: passed.
+- Controls remained readable and usable at 200% browser zoom: passed.
+- Viewer keyboard inspection of feedback, classification, and history:
+  passed; capture, edit, and classification mutation controls were absent.
+- Sign-out initially failed. The developer confirmed it worked after
+  correcting the authentication origin configuration.
+
+These are developer-reported results, not independent participant
+validation. Screen-reader announcement behavior was not separately verified.
+
+## Limitations
+
+No sessions with external participants were conducted.
+The walkthrough does not establish general usability or accessibility
+conformance. Performance results retain the measurement limits described
+above. AI remains disabled, and Week 6 operational limitations remain.
