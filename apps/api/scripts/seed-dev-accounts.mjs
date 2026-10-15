@@ -33,12 +33,20 @@ const deploymentDatabase =
   database.hostname === 'postgres' &&
   database.pathname === '/signaldesk';
 
-if (!localDatabase && !deploymentDatabase) {
-  throw new Error('Account setup requires the local or protected development database');
+const demoTest = process.argv.includes('--demo-test');
+const demoTestDatabase =
+  demoTest &&
+  process.env.NODE_ENV === 'production' &&
+  database.hostname === 'postgres' &&
+  database.pathname === '/signaldesk_test' &&
+  baseURL === 'http://localhost:3300';
+
+if (demoTest ? !demoTestDatabase : !localDatabase && !deploymentDatabase) {
+  throw new Error('Account setup requires an explicitly allowed database');
 }
 
-if (protectedDeploy && resetPasswords) {
-  throw new Error('Password reset is not available during deployment setup');
+if ((protectedDeploy || demoTest) && resetPasswords) {
+  throw new Error('Password reset is unavailable during container setup');
 }
 
 if (editorEmail === viewerEmail) {
@@ -99,10 +107,9 @@ async function setUpUser(email, password, name, role) {
           throw new Error(`Expected one credential account for ${email}`);
         }
 
-        await client.query(
-          'DELETE FROM "session" WHERE "userId" = $1',
-          [existing.rows[0].id],
-        );
+        await client.query('DELETE FROM "session" WHERE "userId" = $1', [
+          existing.rows[0].id,
+        ]);
 
         await client.query('COMMIT');
       } catch (resetError) {
