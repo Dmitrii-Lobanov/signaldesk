@@ -22,24 +22,34 @@ observations and manual accessibility findings.
 ## Performance investigation
 
 Measured the newest inbox-page query against 10,000 synthetic records
-in signaldesk_test, requesting 21 rows.
+in signaldesk_test, requesting 21 rows. Content length was 382–386
+characters. PostgreSQL was 18.6 on aarch64 Alpine Linux.
 
-The visible baseline plan scanned 10,000 rows, sorted them, used 626
-shared-buffer hits, and executed in 5.290 ms.
+Six executions per condition were recorded. Excluding the first execution
+of each condition as warm-up:
 
-The visible experimental indexed plan returned 21 rows without sorting,
-used four shared-buffer hits, and executed in 0.032 ms.
+| Measurement        | Before index             | After index        |
+| ------------------ | ------------------------ | ------------------ |
+| Median execution   | 4.682 ms                 | 0.034 ms           |
+| Execution range    | 4.120–5.092 ms           | 0.024–0.037 ms     |
+| Shared-buffer hits | 626                      | 4                  |
+| Plan               | Sequential scan and sort | Ordered index scan |
 
-Decision: add an index on
+Decision: retain the index on
 (workspace_id, created_at DESC, id DESC).
 
-The experiment used a transaction and rolled back synthetic records and
-the temporary index. A separate migration implements the retained index.
+The comparison temporarily dropped and rebuilt the shipped index inside
+a transaction. Rollback removed the synthetic records and experimental
+changes; the final check confirmed the original index remained.
 
-Limitations: screenshots show individual runs, not five-run averages.
-This measures local database execution, not browser latency, concurrent
-load, search/filter performance, or production behavior.
-The index adds storage and write overhead.
+Reproduction: run from the repository root without concurrent test or
+application traffic:
+
+```sh
+docker compose -p signaldesk-ops-test -f compose.ops-test.yaml \
+exec -T postgres psql -U signaldesk -d signaldesk_test \
+-v ON_ERROR_STOP=1 < docs/operations/evidence/week7/inbox-performance.sql
+```
 
 ## Verification
 
@@ -59,3 +69,4 @@ The index adds storage and write overhead.
 
 AI remains disabled. Week 6 operational verification limitations remain
 unchanged. No user-validation or Week 7 completion claim is made.
+```
