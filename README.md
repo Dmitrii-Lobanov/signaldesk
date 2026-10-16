@@ -8,15 +8,23 @@ SignalDesk is a TypeScript portfolio project built with Next.js, NestJS,
 PostgreSQL, and TypeORM. The implemented slice focuses on a reliable manual
 feedback workflow.
 
-> Status: Local implementation and verification through Week 7 are recorded.
-> The protected development deployment is available through restricted access;
-> a public demo is not yet released. AI suggestions remain disabled.
-> Participant recruitment was unavailable, so usability evidence comes from
-> a labeled developer walkthrough. Protected-deployment verification
-> limitations remain documented.
+> Status: Implemented as a locally runnable repository portfolio.
+> Public hosting, demo recordings, and further demo preparation are deferred
+> by scope decision. AI suggestions remain disabled. This is not a
+> production-readiness claim.
 
-See [Week 7 findings](docs/operations/WEEK7_HARDENING.md) and
-[Week 6 verification limits](docs/operations/WEEK6_CLOSEOUT.md%3A).
+## Review the project
+
+- [Local setup](#run-locally)
+- [Case study](docs/CASE_STUDY.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Data model](docs/DATA_MODEL.md)
+- [AI-assisted development examples](docs/AI_ASSISTED_EXAMPLES.md)
+- [Usability and performance evidence](docs/operations/WEEK7_HARDENING.md)
+- [Operational verification limits](docs/operations/WEEK6_CLOSEOUT.md%3A)
+
+Usability findings are developer-reported; external participants were
+unavailable. Protected-deployment verification limitations remain visible.
 
 ## Run locally
 

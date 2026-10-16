@@ -100,15 +100,23 @@ AI-assisted development is required throughout. An AI classification feature is 
 
 ## Week 8 — Portfolio and interviews
 
-**Outcome:** a reviewer can try the product and assess end-to-end ownership.
+**Revised outcome:** a reviewer can run the application locally and assess
+implementation, decisions, tests, and evidence.
 
-- Stabilize a public demo using isolated synthetic data, constrained demo accounts, sensible limits and a documented reset strategy. Keep provider credentials and administrative access private.
-- Align README status, architecture, data model, backlog and documentation with shipped behavior.
-- Record a two-minute product demo and concise technical walkthrough; write a case study covering decisions, failures, measurements and limitations.
-- Publish at least two AI-assisted development examples showing agent output, your corrections and verification, with sensitive information removed.
-- Practice explaining authorization, transactions, deployment and an unfamiliar failure without relying on the coding agent. Continue targeted applications and use the demo in interviews.
+Scope decision: public hosting, product/technical recordings, and further
+demo preparation are deferred. The original public-demo and video gates
+remain unmet; they are not requirements for this revised repository delivery.
 
-**Gate:** public demo and clean setup work; applicable CI checks pass; required evidence in [PORTFOLIO_EVIDENCE.md](PORTFOLIO_EVIDENCE.md) is reviewable; planned functionality is clearly separated from shipped functionality.
+- Provide local startup instructions and accurate implemented-scope documentation.
+- Publish the case study and two reviewed AI-assisted development examples.
+- Run applicable types, lint, formatting, unit, PostgreSQL integration,
+  authentication-proxy, build, and critical-browser checks.
+- Preserve operational, accessibility, participant, and measurement limitations.
+- Keep AI suggestions disabled and broader product features deferred.
+
+**Gate:** local setup instructions and portfolio evidence are reviewable,
+final applicable checks pass, and remaining limitations are explicit.
+Independent interview practice remains a personal follow-up.
 
 ## Weekly AI-assisted engineering loop
 

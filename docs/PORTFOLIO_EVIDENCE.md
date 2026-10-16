@@ -1,5 +1,24 @@
 # Portfolio evidence plan
 
+## Final delivery scope
+
+The repository portfolio is the selected delivery format.
+Public hosting, demo recordings, and further demo preparation are deferred
+by owner decision. References below to those original requirements describe
+the earlier plan, not completed deliverables.
+
+Implemented evidence:
+
+- [Case study](CASE_STUDY.md)
+- [Architecture](ARCHITECTURE.md)
+- [Data model](DATA_MODEL.md)
+- [AI-assisted examples](AI_ASSISTED_EXAMPLES.md)
+- [Week 7 findings and performance reproduction](operations/WEEK7_HARDENING.md)
+- [Operational limitations](operations/WEEK6_CLOSEOUT.md%3A)
+
+Final verification must identify the tested commit and actual result.
+Earlier passing results do not establish that a later commit passed.
+
 ## Required for the eight-week slice
 
 - Public demo with isolated synthetic data and constrained demo access.
