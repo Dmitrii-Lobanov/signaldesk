@@ -1,138 +1,111 @@
 # Architecture
 
-## Architectural goals
+## Implemented scope
 
-- Make authorization and tenant boundaries explicit.
-- Keep the first deployment understandable by one product engineer.
-- Support reliable feedback changes and traceable mutations; imports follow the portfolio slice.
-- Preserve a fast, accessible React experience with large datasets.
-- Add operational complexity only when a measured requirement justifies it.
+SignalDesk implements authenticated feedback capture, search/filtering,
+cursor pagination, manual classification, editing, and audit history.
 
-## Planned system
+The web interface uses one seeded workspace. The API independently enforces
+workspace membership and editor/viewer permissions, including direct requests.
 
-The diagrams distinguish the initial executable boundary from conditional later components.
+AI suggestions are an implemented experiment but remain disabled and deferred
+from the released manual workflow.
+
+## Request boundaries
 
 ```mermaid
 flowchart LR
-    Browser["Next.js web application"] -->|"REST / OpenAPI"| API["NestJS API"]
-    API --> DB[("PostgreSQL, from Week 1")]
-```
-
-Next.js initially acts as the web application, not an automatic proxy for every NestJS endpoint. Direct browser requests, Server Component requests, and Route Handler/BFF behavior have different authentication, caching, CORS, and deployment consequences. The request and session boundary will be recorded in an ADR before authentication is implemented.
-
-### Conditional target system
-
-```mermaid
-flowchart TB
-    Browser["Next.js web application"]
-    API["NestJS API"]
-    Worker["Background worker"]
-    DB[("PostgreSQL")]
-    Queue[("Redis / BullMQ")]
-    Storage["Object storage"]
-    Observe["Logs, errors, metrics, analytics"]
-
-    Browser -->|"REST / OpenAPI"| API
+    Browser -->|"Pages and interactions"| Web["Next.js"]
+    Web -->|"Auth Route Handler: forwards origin and cookies"| Auth["Better Auth in NestJS"]
+    Web -->|"Server Components and Server Actions: forwards session cookie"| API["NestJS feedback API"]
+    Auth --> DB[("PostgreSQL")]
     API --> DB
-    API --> Queue
-    Worker --> Queue
-    Worker --> DB
-    Worker --> Storage
-    API -->|"SSE job status"| Browser
-    Browser --> Observe
-    API --> Observe
-    Worker --> Observe
 ```
 
-The eight-week slice starts with synchronous manual entry and classification. CSV imports follow the slice. The worker, queue, storage, and live-progress channel are conditional components introduced only when duration, retry, isolation, or storage requirements make their boundaries useful.
+Next.js owns rendering, forms, URL filter state, and recoverable interaction
+states. Authentication Route Handlers relay session cookies between the
+browser and API. Protected server requests explicitly forward the session
+credential.
 
-## Proposed repository layout
+NestJS owns session validation, authorization, input validation, transactional
+mutations, and persistence. Hiding frontend controls is not authorization.
 
-```text
-apps/
-  web/                 Next.js product interface
-  api/                 NestJS REST API
-  worker/              Import and enrichment jobs, when justified
-packages/
-  ui/                  Shared components, after real reuse exists
-  contracts/           Generated API types, when product endpoints require them
-  config/              Shared configuration, after duplication exists
-docs/
-  decisions/           Architecture decision records
-```
+`BETTER_AUTH_URL` must match the browser origin, including its port.
+Public sign-up is disabled; controlled scripts create synthetic accounts.
 
-## Main boundaries
+See [ADR 0004](decisions/0004-authentication-and-workspace-access.md).
 
-### Web application
+## Persistence and integrity
 
-Owns presentation, client interaction state, accessible behavior, URL state, and resilient transitions. Server data remains in a query cache; local UI state does not duplicate it without a reason.
+PostgreSQL stores authentication records, workspaces, memberships, feedback,
+product areas, tags, feedback/tag relationships, and audit events.
 
-### API
+TypeORM uses reviewed migrations with automatic synchronization disabled.
+Workspace-aware constraints prevent cross-workspace classification links.
 
-Owns authentication integration, authorization, validation, business rules, idempotency, persistence, and audit events. Controllers stay thin; application services express use cases.
+- Feedback creation supports a scoped idempotency key.
+- Editing and classification check the expected feedback version.
+- Important mutations and their audit events share one transaction.
+- Failed audit writes roll back the associated mutation.
 
-### Worker
+Inbox pagination orders by `created_at DESC, id DESC`. An index on
+`(workspace_id, created_at DESC, id DESC)` supports that access pattern.
+Audit history is ordered but is not cursor-paginated.
 
-Owns slow and retryable work such as parsing imports, enrichment, and similarity indexing. Jobs are idempotent and expose terminal failure states.
+Frontend domain types derive from the OpenAPI schema.
 
-### Database
+## Form state
 
-PostgreSQL is the source of truth. Tenant-scoped entities contain a workspace identifier. Business invariants use transactions and database constraints where appropriate.
+Successful mutations refresh server-rendered data. Untouched edit and
+classification forms adopt refreshed versions. Unsaved drafts retain their
+original versions so a refresh cannot silently authorize a stale write.
 
-## API design
+The browser journey covers capture-error recovery, editing, stale rejection,
+manual classification, persistence, audit evidence, and viewer restrictions.
 
-- Resource-oriented REST endpoints documented with OpenAPI.
-- Cursor pagination for high-volume inbox and audit endpoints.
-- Request validation at the boundary and structured domain errors.
-- Idempotency keys for imports and other retry-prone commands.
-- Optimistic concurrency for edits where silent overwrites would be harmful.
-- Generated frontend types from the API contract; no hand-maintained duplicate models.
+## Operations
 
-## Authentication and authorization
+The API distinguishes process liveness from PostgreSQL readiness.
+Requests have correlated logs, and unexpected API errors are sanitized.
+Authentication proxy failures and feedback edit failures expose references.
+Page-render failures have bounded, privacy-conscious reporting.
 
-Use an established authentication library or provider; do not invent cryptography. Regardless of provider, the API enforces workspace membership and role checks on every protected operation. Object identifiers alone never grant access.
+Payload limits, feedback request/write limits, and a shared production
+sign-in budget constrain the protected demo. These in-memory limits are
+not shared across API instances and reset on restart.
 
-Roles for the MVP:
+Monitoring is operator-reviewed. External alerts and durable log collection
+are deferred. Recovery rehearsals and their limits are recorded in
+[operations documentation](operations/WEEK6_CLOSEOUT.md%3A).
 
-- **Owner:** manage workspace and members; all editor capabilities.
-- **Editor:** manage signals, opportunities, and decisions.
-- **Viewer:** read workspace data and history.
+## Demo environments
 
-Authorization tests cover cross-workspace access, role boundaries, and indirect object references.
+- Local development uses its own configuration and database.
+- The local portfolio demo uses Compose project `signaldesk-demo`,
+  a separate volume, `signaldesk_test`, and loopback port 3300.
+- The guarded local reset restores one feedback record and clears the demo
+  workspace's feedback/audit history. Accounts and classification options
+  remain.
+- The protected EC2 development deployment remains separate.
+- Public hosting is deferred; the local demo is not a public release.
 
-## Reliability model
+Committed demo credentials are disposable local credentials, not deployment
+secrets. AI remains disabled.
 
-- Mutations return a stable request or event identifier.
-- Important changes append an audit event in the same transaction.
-- Imports track accepted, rejected, retried, and duplicate rows.
-- Background jobs use bounded retries and a dead-letter state.
-- Optimistic UI changes have an explicit rollback and recovery path.
-- External calls use timeouts and do not hold open database transactions.
+## Verification and limitations
 
-## Live updates
+PostgreSQL integration tests use only `signaldesk_test`.
+Automated browser checks complement the developer-reported keyboard and
+zoom walkthrough; external participants were unavailable.
+Screen-reader announcements were not separately verified.
 
-Polling or Server-Sent Events are the defaults for import progress and activity notifications because the server is the primary sender. Choose between them using update frequency, connection lifetime, hosting constraints, and recovery requirements. WebSockets are deferred until a bidirectional, low-latency requirement is demonstrated.
+The performance investigation measures one local inbox query on synthetic
+data, not production traffic or end-to-end browser latency.
 
-## Observability
+See [Week 7 evidence](operations/WEEK7_HARDENING.md) for results and limits.
 
-Every request and job carries a correlation identifier. Structured logs include operation, workspace, duration, and outcome without exposing sensitive content. The initial operational views should answer:
+## Deferred components
 
-- Which endpoint or job is failing?
-- Which user workflow is affected?
-- Is the failure isolated to one workspace or import?
-- Did the user recover or abandon the flow?
-
-## Conditional AI classification boundary
-
-In Week 5, after core gates pass, the API may call one model provider through a server-side adapter. Keep credentials on the server. Resolve workspace permissions before loading feedback and treat feedback text as untrusted data, never as executable instructions. Send only bounded synthetic or explicitly approved content.
-
-Validate structured suggestions against permitted workspace product areas and tags. Suggestions cannot write to the database as classifications; human acceptance uses the existing authorized, transactional audit path and checks for stale feedback. Keep external calls outside database transactions. Apply timeouts, request limits and manual fallback. Record model/prompt versions and privacy-safe quality, latency and cost evidence. No worker, vector store or agent framework is required.
-
-## Deployment stages
-
-1. Week 1: local and protected hosted web/API/PostgreSQL slice with CI and synthetic data. Protect both web and API before application authentication exists.
-2. Week 2: authentication and tested server-side workspace/role enforcement before opening application access.
-3. Week 5, conditional: server-side classification adapter after core reliability gates pass.
-4. Week 6: monitoring, readiness and rehearsed deployment/data recovery.
-5. Week 8: public demo with isolated synthetic data, constrained accounts, limits and a reset strategy.
-6. After the slice: imports, workers or live delivery only when justified by measured needs.
+CSV imports, customer/sentiment classification, opportunities, decisions,
+workers, Redis/BullMQ, live updates, analytics, and owner/member
+administration are outside the implemented slice.
