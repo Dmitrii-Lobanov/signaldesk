@@ -212,6 +212,8 @@ export default async function FeedbackDetail({
     (tagId) => tags.find((tag) => tag.id === tagId)?.name ?? "Unavailable tag",
   );
 
+  console.log("!!!", process.env.AI_SUGGESTIONS_ENABLED);
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>

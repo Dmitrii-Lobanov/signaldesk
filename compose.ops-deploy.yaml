@@ -22,7 +22,7 @@ services:
       DATABASE_URL: postgresql://signaldesk:deploy-test-only-password@postgres:5432/signaldesk_test
       BETTER_AUTH_SECRET: deploy-test-only-secret-at-least-32-characters
       BETTER_AUTH_URL: http://localhost:3300
-      AI_SUGGESTIONS_ENABLED: "false"
+      AI_SUGGESTIONS_ENABLED: "true"
       PORT: "3001"
     depends_on:
       postgres:
@@ -45,7 +45,7 @@ services:
       dockerfile: apps/web/Dockerfile
     environment:
       API_BASE_URL: http://api:3001
-      AI_SUGGESTIONS_ENABLED: "false"
+      AI_SUGGESTIONS_ENABLED: "true"
       PORT: "3000"
     ports:
       - "127.0.0.1:3300:3000"

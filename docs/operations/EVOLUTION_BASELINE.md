@@ -1,0 +1,48 @@
+# Evolution baseline verification
+
+## Scope
+
+Epic 1, Step 1: verify the existing application before infrastructure
+and event-processing changes.
+
+## Verification record
+
+- Verification date: TODO
+- Verified application commit: TODO
+- Node version: TODO
+- Automated verification: NOT RUN
+- Manual browser walkthrough: NOT RUN
+
+## Automated verification
+
+Command:
+
+    bash scripts/verify-project.sh
+
+Result: TODO
+
+Record the actual outcome. If verification fails, record the failing
+check and its resolution before claiming a pass.
+
+The verification script uses the isolated signaldesk_test database.
+The local execution log is stored in tmp/evolution-baseline-checks.log
+and is not committed.
+
+## Manual browser walkthrough
+
+- [x] Editor can sign in and create synthetic feedback.
+- [x] Search finds the created feedback.
+- [x] Classification changes persist.
+- [x] Text edits persist and appear in audit history.
+- [x] Viewer can read feedback without editing controls.
+- [x] Feedback remains after restarting the API.
+
+## Findings
+
+TODO: Record failures or limitations observed during this verification.
+If none were observed, state that explicitly.
+
+## Boundary
+
+This record verifies local behavior only. It does not verify the current
+AWS deployment, Terraform management, or planned event-processing features.

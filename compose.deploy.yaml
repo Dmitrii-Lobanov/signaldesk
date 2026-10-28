@@ -30,7 +30,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set BETTER_AUTH_URL}
-      AI_SUGGESTIONS_ENABLED: "false"
+      AI_SUGGESTIONS_ENABLED: "true"
       PORT: "3001"
     depends_on:
       postgres:
@@ -73,7 +73,7 @@ services:
       dockerfile: apps/web/Dockerfile
     environment:
       API_BASE_URL: http://api:3001
-      AI_SUGGESTIONS_ENABLED: "false"
+      AI_SUGGESTIONS_ENABLED: "true"
       PORT: "3000"
     ports:
       - "127.0.0.1:3000:3000"

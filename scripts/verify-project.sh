@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 export DATABASE_URL='postgresql://signaldesk:ops-test-only-password@localhost:5546/signaldesk_test'
 export BETTER_AUTH_SECRET='final-local-test-secret-at-least-32-characters'
 export BETTER_AUTH_URL='http://localhost:3100'
-export AI_SUGGESTIONS_ENABLED=false
+export AI_SUGGESTIONS_ENABLED=true
 
 echo "Verifying commit:"
 git rev-parse HEAD
