@@ -104,8 +104,18 @@ data, not production traffic or end-to-end browser latency.
 
 See [Week 7 evidence](operations/WEEK7_HARDENING.md) for results and limits.
 
-## Deferred components
+## Planned evolution
 
-CSV imports, customer/sentiment classification, opportunities, decisions,
-workers, Redis/BullMQ, live updates, analytics, and owner/member
-administration are outside the implemented slice.
+The [evolution plan](EVOLUTION_PLAN.md) describes planned Terraform-managed
+AWS infrastructure, RabbitMQ, a transactional outbox, separate background
+processes, webhook ingestion, and processing visibility.
+
+These components are not part of the implemented architecture described
+above. AI enrichment and scheduled insights follow the verified
+event-processing release.
+
+See [ADR 0005](decisions/0005-resilient-feedback-platform.md) for the
+decision and its tradeoffs.
+
+CSV imports, opportunity scoring, full decision tracking, vector search,
+and elaborate membership administration remain outside this phase.

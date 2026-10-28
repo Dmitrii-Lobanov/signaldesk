@@ -1,6 +1,8 @@
-# Delivery backlog
+# Original delivery backlog
 
-[ROADMAP.md](ROADMAP.md) controls the eight-week portfolio slice. The complete product remains broader; unchecked plans are not shipped features.
+This backlog describes the original eight-week portfolio slice.
+The [evolution plan](EVOLUTION_PLAN.md) controls future delivery.
+Items below are historical requirements or ideas, not a completion record.
 
 ## Required: foundation and access — Weeks 1–2
 

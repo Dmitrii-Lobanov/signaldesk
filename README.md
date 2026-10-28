@@ -8,10 +8,12 @@ SignalDesk is a TypeScript portfolio project built with Next.js, NestJS,
 PostgreSQL, and TypeORM. The implemented slice focuses on a reliable manual
 feedback workflow.
 
-> Status: Implemented as a locally runnable repository portfolio.
-> Public hosting, demo recordings, and further demo preparation are deferred
-> by scope decision. AI suggestions remain disabled. This is not a
-> production-readiness claim.
+> Status: The repository implements a locally runnable manual feedback
+> workflow and documents a protected EC2 development deployment.
+> The next phase adds Terraform-managed AWS infrastructure, resilient
+> event processing, webhook ingestion, and portfolio demonstrations.
+> These additions are planned; AI suggestions remain disabled.
+> See the [evolution plan](docs/EVOLUTION_PLAN.md).
 
 ## Review the project
 

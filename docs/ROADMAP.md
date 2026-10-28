@@ -1,4 +1,8 @@
-# Eight-week portfolio roadmap
+# Original eight-week portfolio roadmap
+
+> Historical plan for the original portfolio slice.
+> The [evolution plan](EVOLUTION_PLAN.md) controls future delivery.
+> Original gates and limitations remain below as historical context.
 
 ## Goal and budget
 
@@ -6,7 +10,9 @@ Demonstrate independent end-to-end TypeScript delivery with disciplined AI-assis
 
 Budget **15–20 hours per week** for eight weeks (120–160 hours total): 60% building and verification, 20% targeted learning, 10% independent explanation/debugging and interview practice, and 10% portfolio evidence. At 10 hours per week, reduce scope or extend the schedule; do not assume AI removes the difference. Keep job-search activity running alongside delivery.
 
-This roadmap controls scope and order. [LEARNING_PLAN.md](LEARNING_PLAN.md) supplies milestone-specific study. Tests and applicable [quality checks](QUALITY_BAR.md) accompany implementation every week.
+This roadmap controlled the original slice's scope and order.
+[LEARNING_PLAN.md](LEARNING_PLAN.md) records the associated study plan.
+Applicable [quality checks](QUALITY_BAR.md) continue to accompany changes.
 
 ## Required outcome
 
