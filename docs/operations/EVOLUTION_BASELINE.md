@@ -39,8 +39,14 @@ and is not committed.
 
 ## Findings
 
-TODO: Record failures or limitations observed during this verification.
-If none were observed, state that explicitly.
+- Initial manual startup failed because development PostgreSQL was stopped.
+  Starting the existing database resolved the connection failure.
+- Sign-in initially failed because BETTER_AUTH_URL used port 3002 while
+  the browser used port 3000. Matching the origin resolved the failure.
+- AI suggestions were explicitly enabled for local experimentation.
+- UI review led to spacing improvements and Radix Select adoption.
+- Automated verification preceded the UI changes; subsequent UI checks
+  must be recorded separately.
 
 ## Boundary
 

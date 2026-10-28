@@ -47,7 +47,7 @@ and scheduled insights are planned features. AI suggestions remain disabled.
 ## Epic 1 — Verify the baseline and architecture
 
 - [x] Run the application and existing applicable checks.
-- [ ] Inspect existing AWS resources and deployment status.
+- [x] Inspect existing AWS resources and deployment status.
 - [ ] Record current operational gaps and unresolved failures.
 - [ ] Define the first asynchronous feedback-processing workflow.
 - [ ] Confirm process boundaries and event contracts.
