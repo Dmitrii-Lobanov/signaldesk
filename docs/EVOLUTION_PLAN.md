@@ -48,7 +48,7 @@ and scheduled insights are planned features. AI suggestions remain disabled.
 
 - [x] Run the application and existing applicable checks.
 - [x] Inspect existing AWS resources and deployment status.
-- [ ] Record current operational gaps and unresolved failures.
+- [x] Record current operational gaps and unresolved failures.
 - [ ] Define the first asynchronous feedback-processing workflow.
 - [ ] Confirm process boundaries and event contracts.
 - [ ] Define supported failure scenarios and acceptance criteria.
