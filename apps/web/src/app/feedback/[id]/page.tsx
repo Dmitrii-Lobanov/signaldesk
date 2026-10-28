@@ -212,11 +212,9 @@ export default async function FeedbackDetail({
     (tagId) => tags.find((tag) => tag.id === tagId)?.name ?? "Unavailable tag",
   );
 
-  console.log("!!!", process.env.AI_SUGGESTIONS_ENABLED);
-
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
+      <main className={`${styles.main} ${styles.detailMain}`}>
         <Link href={backHref}>Back to inbox</Link>
 
         <article aria-labelledby="feedback-title">

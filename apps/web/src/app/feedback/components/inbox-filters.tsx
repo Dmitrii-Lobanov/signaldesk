@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../page.module.css";
 import { ClassificationOption } from "@/api/feedback";
+import { Select } from "@/app/components/ui/select";
 
 type Filters = { q: string; area: string; tag: string };
 
@@ -17,6 +18,9 @@ export function InboxFilters({
   areas: ClassificationOption[];
   tags: ClassificationOption[];
 }) {
+  const [area, setArea] = useState(filters.area);
+  const [tag, setTag] = useState(filters.tag);
+
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -26,8 +30,6 @@ export function InboxFilters({
     const values = new FormData(event.currentTarget);
     const params = new URLSearchParams();
     const q = String(values.get("q") ?? "").trim();
-    const area = String(values.get("area") ?? "");
-    const tag = String(values.get("tag") ?? "");
 
     if (q) params.set("q", q);
     if (area) params.set("area", area);
@@ -55,26 +57,36 @@ export function InboxFilters({
 
       <div className={styles.filterField}>
         <label htmlFor="filter-area">Product area</label>
-        <select id="filter-area" name="area" defaultValue={filters.area}>
-          <option value="">All areas</option>
-          {areas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
-          ))}
-        </select>
+        <Select
+          id="filter-area"
+          value={area || "all"}
+          onValueChange={(value) => setArea(value === "all" ? "" : value)}
+          options={[
+            { value: "all", label: "All areas" },
+            ...areas.map((option) => ({
+              value: option.id,
+              label: option.name,
+            })),
+          ]}
+          disabled={pending}
+        />
       </div>
 
       <div className={styles.filterField}>
         <label htmlFor="filter-tag">Tag</label>
-        <select id="filter-tag" name="tag" defaultValue={filters.tag}>
-          <option value="">All tags</option>
-          {tags.map((tag) => (
-            <option key={tag.id} value={tag.id}>
-              {tag.name}
-            </option>
-          ))}
-        </select>
+        <Select
+          id="filter-tag"
+          value={tag || "all"}
+          onValueChange={(value) => setTag(value === "all" ? "" : value)}
+          options={[
+            { value: "all", label: "All tags" },
+            ...tags.map((option) => ({
+              value: option.id,
+              label: option.name,
+            })),
+          ]}
+          disabled={pending}
+        />
       </div>
 
       <div className={styles.filterActions}>

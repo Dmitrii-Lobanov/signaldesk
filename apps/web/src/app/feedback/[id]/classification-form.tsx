@@ -12,6 +12,7 @@ import {
   saveFeedbackClassification,
 } from "../../actions";
 import styles from "../../page.module.css";
+import { Select } from "@/app/components/ui/select";
 
 type Props = {
   feedbackId: string;
@@ -169,7 +170,10 @@ export function ClassificationForm({
     ) ?? [];
 
   return (
-    <section aria-labelledby="classify-heading">
+    <section
+      className={styles.classificationPanel}
+      aria-labelledby="classify-heading"
+    >
       <h2 id="classify-heading">Classify feedback</h2>
 
       {suggestionsEnabled && (
@@ -210,18 +214,21 @@ export function ClassificationForm({
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <label htmlFor="product-area">Product area</label>
-        <select
+        <Select
           id="product-area"
-          value={areaId}
-          onChange={(event) => setAreaId(event.target.value)}
-        >
-          <option value="">No product area</option>
-          {areas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
-          ))}
-        </select>
+          value={areaId || "none"}
+          onValueChange={(value: string) =>
+            setAreaId(value === "none" ? "" : value)
+          }
+          options={[
+            { value: "none", label: "No product area" },
+            ...areas.map((area) => ({
+              value: area.id,
+              label: area.name,
+            })),
+          ]}
+          disabled={isPending}
+        />
 
         <fieldset className={styles.tagChoices}>
           <legend>Tags</legend>
