@@ -242,7 +242,15 @@ test("editor creates and edits feedback; history names the actor; stale edit is 
     version: 2,
   });
 
-  await page.getByLabel("Product area", { exact: true }).selectOption(areaId);
+  const productArea = page.getByRole("combobox", {
+    name: "Product area",
+    exact: true,
+  });
+
+  await productArea.click();
+  await page.getByRole("option", { name: areaName, exact: true }).click();
+  await expect(productArea).toHaveText(areaName);
+
   await page.getByRole("checkbox", { name: tagName, exact: true }).check();
   await page
     .getByRole("button", { name: "Save manual classification" })
