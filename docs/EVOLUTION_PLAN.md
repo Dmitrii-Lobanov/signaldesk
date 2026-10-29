@@ -51,7 +51,7 @@ and scheduled insights are planned features. AI suggestions remain disabled.
 - [x] Record current operational gaps and unresolved failures.
 - [x] Define the first asynchronous feedback-processing workflow.
 - [x] Confirm process boundaries and event contracts.
-- [ ] Define supported failure scenarios and acceptance criteria.
+- [x] Define supported failure scenarios and acceptance criteria.
 
 Completion: the starting point, architecture, and verification scope
 are documented and supported by evidence.
