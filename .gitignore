@@ -13,3 +13,16 @@ coverage/
 !.vscode/extensions.json
 tmp/
 *.tsbuildinfo
+
+
+# Terraform local files, state, and saved plans
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+crash.log
+crash.*.log
