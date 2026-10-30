@@ -59,8 +59,7 @@ are documented and supported by evidence.
 ## Epic 2 — Manage AWS infrastructure with Terraform
 
 - [x] Create documented Terraform configuration under infra/terraform.
-- [ ] Configure remote state with encryption, versioning, locking,
-      and restricted access.
+- [x] Configure remote state with encryption, versioning, locking,
 - [ ] Define networking, security groups, IAM, compute, and storage.
 - [ ] Import existing resources that should remain in use.
 - [ ] Review plans and resolve unintended changes before applying them.

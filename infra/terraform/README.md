@@ -13,29 +13,50 @@ The AWS provider rejects credentials belonging to another account.
 
 ## Local setup
 
-Install Terraform using HashiCorp's macOS instructions.
+Use the signaldesk-operator IAM user through temporary CLI credentials.
 
 From the repository root:
 
-    terraform -chdir=infra/terraform init -backend=false
+    aws login --profile signaldesk
+    export AWS_PROFILE=signaldesk-terraform
+    aws sts get-caller-identity
+    terraform -chdir=infra/terraform init
     terraform -chdir=infra/terraform fmt -check
     terraform -chdir=infra/terraform validate
+    terraform -chdir=infra/terraform plan
 
-Initialization downloads the AWS provider and creates a dependency lock
-file. Commit .terraform.lock.hcl; do not commit the .terraform directory.
+The signaldesk-terraform profile obtains credentials through:
 
-These checks do not create AWS resources or verify AWS credentials.
+    credential_process = aws configure export-credentials --profile signaldesk --format process
+
+Store profile configuration in the local AWS CLI configuration,
+not in repository files.
+
+## State storage
+
+Bucket: signaldesk-tfstate-376896792178-us-east-2.
+
+- Bootstrap state: bootstrap/terraform.tfstate.
+- Application infrastructure state: dev/terraform.tfstate.
+
+Both backends enable encryption and S3 state locking.
+The bucket enables versioning, blocks public access, and requires HTTPS.
+
+The bootstrap configuration lives in ../bootstrap.
+Its state was initially local and must be migrated successfully before
+considering remote-state setup complete.
+
+Commit dependency lock files. Never commit state files, saved plans,
+credentials, or .terraform directories.
 
 ## Next steps
 
-Configure named operator access and protected remote state before
-planning imports or applying infrastructure changes.
+Verify existing infrastructure ownership before importing resources.
+Review every plan before applying changes.
 
-The remote-state storage requires a separate bootstrap configuration.
-Do not import the existing instance into temporary local state.
-
-Existing resources must be checked for prior infrastructure ownership
-before adoption.
+The operator currently has bucket bootstrap permissions.
+Narrow configuration permissions after bootstrap verification.
+Application infrastructure permissions will be configured separately.
 
 ## Responsibility boundary
 
