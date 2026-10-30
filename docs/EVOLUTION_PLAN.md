@@ -60,6 +60,7 @@ are documented and supported by evidence.
 
 - [x] Create documented Terraform configuration under infra/terraform.
 - [x] Configure remote state with encryption, versioning, locking,
+      and restricted access.
 - [ ] Define networking, security groups, IAM, compute, and storage.
 - [ ] Import existing resources that should remain in use.
 - [ ] Review plans and resolve unintended changes before applying them.
