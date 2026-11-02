@@ -5,21 +5,21 @@ Scope: Epic 1, Step 2 — inspect the existing deployment.
 
 ## Account and compute
 
-| Field                        | Observed value      |
-| ---------------------------- | ------------------- |
-| AWS account ID               | 376896792178        |
-| Region                       | us-east-2           |
-| Availability zone            | us-east-2c          |
-| Instance name                | signaldesk-dev      |
-| Instance ID                  | i-02fa4b4902626f926 |
-| Instance type                | m7i-flex.large      |
-| State                        | Running             |
-| Infrastructure status checks | 3/3 passed          |
-| Operating system             | Ubuntu 26.04 LTS    |
-| AMI ID                       | Not yet recorded    |
-| Key-pair name                | signaldesk_001      |
-| IAM role                     | None                |
-| IMDSv2                       | Required            |
+| Field                        | Observed value        |
+| ---------------------------- | --------------------- |
+| AWS account ID               | 376896792178          |
+| Region                       | us-east-2             |
+| Availability zone            | us-east-2c            |
+| Instance name                | signaldesk-dev        |
+| Instance ID                  | i-02fa4b4902626f926   |
+| Instance type                | m7i-flex.large        |
+| State                        | Running               |
+| Infrastructure status checks | 3/3 passed            |
+| Operating system             | Ubuntu 26.04 LTS      |
+| AMI ID                       | ami-0e5497a77ef21b5ac |
+| Key-pair name                | signaldesk_001        |
+| IAM role                     | None                  |
+| IMDSv2                       | Required              |
 
 ## Networking
 
@@ -50,7 +50,7 @@ The listening service has not yet been independently verified.
 | Root volume ID        | vol-004c86f7f1624ac9a |
 | Device                | /dev/sda1             |
 | Size                  | 30 GiB                |
-| Volume type           | Not yet recorded      |
+| Volume type           | gp3                   |
 | Encrypted             | No                    |
 | Delete on termination | Yes                   |
 
@@ -99,3 +99,16 @@ workflows have not been verified on this deployment.
 This inventory confirms observed resources, container states, storage
 mounts, and basic HTTP responses. It does not establish full application
 health, successful authentication, restore capability, or high availability.
+
+## CLI discovery follow-up
+
+Discovery files confirmed:
+
+- AMI: ami-0e5497a77ef21b5ac.
+- Root disk: gp3, 30 GiB, 3000 IOPS, 125 MiB/s throughput.
+- API termination protection: disabled.
+- Metadata response hop limit: 2.
+- Detailed monitoring: disabled.
+
+Terraform definitions preserve these observed settings.
+Infrastructure ownership still requires verification before import.
