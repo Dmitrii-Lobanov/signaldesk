@@ -1,7 +1,9 @@
 # SignalDesk AWS infrastructure
 
-Status: configuration foundation only.
-No AWS resources or imports are declared yet.
+Status: existing EC2 instance, security group, and four rules imported.
+Application and bootstrap plans reported no changes on 2026-11-02.
+The existing VPC and subnet are referenced through data sources.
+The instance currently has no IAM instance profile.
 
 ## Target
 
@@ -43,20 +45,61 @@ Both backends enable encryption and S3 state locking.
 The bucket enables versioning, blocks public access, and requires HTTPS.
 
 The bootstrap configuration lives in ../bootstrap.
-Its state was initially local and must be migrated successfully before
-considering remote-state setup complete.
+Both bootstrap and application state have been migrated to S3.
 
 Commit dependency lock files. Never commit state files, saved plans,
 credentials, or .terraform directories.
 
-## Next steps
+## Infrastructure updates
 
-Verify existing infrastructure ownership before importing resources.
-Review every plan before applying changes.
+Authenticate using the local setup above. Confirm that the caller ARN
+ends with user/signaldesk-operator.
 
-The operator currently has bucket bootstrap permissions.
-Narrow configuration permissions after bootstrap verification.
-Application infrastructure permissions will be configured separately.
+Run formatting, validation, and a plan for the directory being changed.
+Save the reviewed plan and apply that exact file:
+
+    terraform -chdir=infra/terraform plan -out=reviewed.tfplan
+    terraform -chdir=infra/terraform apply reviewed.tfplan
+    terraform -chdir=infra/terraform plan
+
+Proceed only when every proposed change is understood.
+The final plan should report no changes.
+
+CI checks formatting and validation for both Terraform directories.
+Live AWS plans and applies remain local.
+
+The operator retains bucket bootstrap permissions.
+Narrow those permissions separately after reviewing required operations.
+
+## Recovery
+
+S3 versioning preserves previous state versions. State recovery restores
+Terraform's resource records; it does not restore application data.
+
+If state appears missing, first check the AWS identity, backend bucket,
+state key, and workspace. Do not apply a plan proposing duplicate resources.
+
+For suspected state corruption, stop all Terraform runs and preserve the
+current state securely before investigating previous S3 object versions.
+Restore state only through a separately reviewed recovery procedure.
+Do not force-unlock state until the owning operation is confirmed stopped.
+
+Application database backup and restore remain unverified.
+Before deployment or storage changes, create a database backup outside
+the EC2 root volume and verify restoration.
+
+## Teardown
+
+Teardown is not currently approved or verified.
+The instance, security group, rules, and state bucket use prevent_destroy.
+
+The EC2 root volume contains application data and is configured for
+deletion when the instance terminates. Before intentional teardown,
+verify an independent database backup and restore, review dependencies,
+and explicitly review any removal of destruction protections.
+
+Preserve the state bucket and its versions until application recovery
+and infrastructure teardown are complete.
 
 ## Responsibility boundary
 

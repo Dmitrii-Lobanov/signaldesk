@@ -62,8 +62,8 @@ are documented and supported by evidence.
 - [x] Configure remote state with encryption, versioning, locking,
       and restricted access.
 - [ ] Define networking, security groups, IAM, compute, and storage.
-- [ ] Import existing resources that should remain in use.
-- [ ] Review plans and resolve unintended changes before applying them.
+- [x] Import existing resources that should remain in use.
+- [x] Review plans and resolve unintended changes before applying them.
 - [ ] Add Terraform formatting and validation to CI.
 - [ ] Document infrastructure updates, recovery, and teardown.
 - [ ] Add resource tags and cost alerts.
