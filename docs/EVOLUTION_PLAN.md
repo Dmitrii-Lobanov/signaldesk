@@ -64,8 +64,8 @@ are documented and supported by evidence.
 - [ ] Define networking, security groups, IAM, compute, and storage.
 - [x] Import existing resources that should remain in use.
 - [x] Review plans and resolve unintended changes before applying them.
-- [ ] Add Terraform formatting and validation to CI.
-- [ ] Document infrastructure updates, recovery, and teardown.
+- [x] Add Terraform formatting and validation to CI.
+- [x] Document infrastructure updates, recovery, and teardown.
 - [ ] Add resource tags and cost alerts.
 
 Completion: Terraform manages the intended AWS resources through a

@@ -3,6 +3,7 @@ resource "aws_security_group" "app" {
   description = "launch-wizard-1 created 2026-09-24T15:35:38.113Z"
   vpc_id      = data.aws_vpc.existing.id
 
+  tags = local.common_tags
   lifecycle {
     prevent_destroy = true
   }
@@ -15,6 +16,7 @@ resource "aws_vpc_security_group_ingress_rule" "operator_ssh" {
   to_port           = 22
   cidr_ipv4         = var.operator_ipv4_cidr
 
+  tags = local.common_tags
   lifecycle {
     prevent_destroy = true
   }
@@ -27,6 +29,7 @@ resource "aws_vpc_security_group_ingress_rule" "instance_connect" {
   to_port           = 22
   prefix_list_id    = "pl-03915406641cb1f53"
 
+  tags = local.common_tags
   lifecycle {
     prevent_destroy = true
   }
@@ -39,6 +42,7 @@ resource "aws_vpc_security_group_ingress_rule" "operator_ssh_443" {
   to_port           = 443
   cidr_ipv4         = var.operator_ipv4_cidr
 
+  tags = local.common_tags
   lifecycle {
     prevent_destroy = true
   }
@@ -49,6 +53,7 @@ resource "aws_vpc_security_group_egress_rule" "outbound" {
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
 
+  tags = local.common_tags
   lifecycle {
     prevent_destroy = true
   }

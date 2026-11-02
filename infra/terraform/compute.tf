@@ -28,9 +28,9 @@ resource "aws_instance" "app" {
     delete_on_termination = true
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "signaldesk-dev"
-  }
+  })
 
   lifecycle {
     prevent_destroy = true
