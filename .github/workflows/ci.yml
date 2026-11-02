@@ -88,3 +88,42 @@ jobs:
 
       - name: Test critical browser journey
         run: npm run test:e2e --workspace=apps/web
+
+  terraform:
+    name: Terraform (${{ matrix.directory }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - infra/bootstrap
+          - infra/terraform
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.1"
+          terraform_wrapper: false
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -diff
+
+      - name: Initialize for validation
+        run: terraform init -backend=false -lockfile=readonly
+
+      - name: Validate Terraform configuration
+        run: terraform validate -no-color
