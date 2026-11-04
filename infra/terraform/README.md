@@ -88,6 +88,21 @@ Application database backup and restore remain unverified.
 Before deployment or storage changes, create a database backup outside
 the EC2 root volume and verify restoration.
 
+## On-demand demo operation
+
+Leave `signaldesk-dev` stopped between demos to conserve AWS credits.
+The hosted demo is offline while the instance is stopped. EC2 compute
+charges pause, and the attached EBS volume continues to incur storage charges.
+
+1. Before a demo, open EC2 in `us-east-2`, select `signaldesk-dev`, and
+   choose **Instance state → Start instance**.
+2. Wait for the EC2 status checks to pass. Check the public IPv4 address
+   because AWS can assign a new one after a stop/start. Update any demo URL,
+   DNS record, or SSH configuration that uses the previous address.
+3. Verify SignalDesk loads before sharing the demo link.
+4. After the demo, choose **Instance state → Stop instance** and confirm
+   the instance reaches **Stopped**.
+
 ## Teardown
 
 Teardown is not currently approved or verified.
