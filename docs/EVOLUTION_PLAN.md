@@ -83,7 +83,10 @@ reviewable workflow, with data preservation documented.
       Published `signaldesk-api` and `signaldesk-web` for `linux/amd64` to
       private ECR repositories in `us-east-2` and verified both image
       digests for immutable tag `95c3b997e844`.
-- [ ] Configure GitHub Actions authentication to AWS using OIDC.
+- [x] Configure GitHub Actions authentication to AWS using OIDC.
+      Verified that the workflow on `main` assumes
+      `SignalDeskGitHubEcrPublisher` using temporary AWS credentials.
+      Evidence: GitHub Actions run `41852904585`, attempt 2.
 - [ ] Configure secure runtime secrets and application settings.
 - [ ] Configure a domain, HTTPS, and appropriate demo access.
 - [ ] Resolve the existing SSH-on-port-443 arrangement.
