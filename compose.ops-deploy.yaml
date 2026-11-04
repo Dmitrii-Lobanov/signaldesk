@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: signaldesk_test
       POSTGRES_USER: signaldesk
-      POSTGRES_PASSWORD: deploy-test-only-password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     volumes:
       - ops_data:/var/lib/postgresql
     healthcheck:
@@ -19,8 +19,8 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      DATABASE_URL: postgresql://signaldesk:deploy-test-only-password@postgres:5432/signaldesk_test
-      BETTER_AUTH_SECRET: deploy-test-only-secret-at-least-32-characters
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3300
       AI_SUGGESTIONS_ENABLED: "true"
       PORT: "3001"
