@@ -1,0 +1,24 @@
+name: Verify AWS OIDC
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Assume the ECR publisher role
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          aws-region: us-east-2
+          allowed-account-ids: "376896792178"
+          role-session-name: github-${{ github.run_id }}
+          role-to-assume: arn:aws:iam::376896792178:role/SignalDeskGitHubEcrPublisher
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
