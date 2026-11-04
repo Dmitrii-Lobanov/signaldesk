@@ -79,7 +79,10 @@ reviewable workflow, with data preservation documented.
 
 ## Epic 3 — Establish repeatable application deployment
 
-- [ ] Build versioned container images and publish them to Amazon ECR.
+- [x] Build versioned container images and publish them to Amazon ECR.
+      Published `signaldesk-api` and `signaldesk-web` for `linux/amd64` to
+      private ECR repositories in `us-east-2` and verified both image
+      digests for immutable tag `95c3b997e844`.
 - [ ] Configure GitHub Actions authentication to AWS using OIDC.
 - [ ] Configure secure runtime secrets and application settings.
 - [ ] Configure a domain, HTTPS, and appropriate demo access.
