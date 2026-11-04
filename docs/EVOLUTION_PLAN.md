@@ -61,7 +61,10 @@ are documented and supported by evidence.
 - [x] Create documented Terraform configuration under infra/terraform.
 - [x] Configure remote state with encryption, versioning, locking,
       and restricted access.
-- [ ] Define networking, security groups, IAM, compute, and storage.
+- [x] Define the existing AWS infrastructure in Terraform.
+      Reference the existing VPC and subnet. Manage the EC2 instance, its
+      root volume configuration, and the application security group and rules.
+      The current instance has no IAM role. Deployment IAM is part of Epic 3.
 - [x] Import existing resources that should remain in use.
 - [x] Review plans and resolve unintended changes before applying them.
 - [x] Add Terraform formatting and validation to CI.
