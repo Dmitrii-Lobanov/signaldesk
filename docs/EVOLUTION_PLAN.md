@@ -66,7 +66,10 @@ are documented and supported by evidence.
 - [x] Review plans and resolve unintended changes before applying them.
 - [x] Add Terraform formatting and validation to CI.
 - [x] Document infrastructure updates, recovery, and teardown.
-- [ ] Add resource tags and cost alerts.
+- [x] Add resource tags and cost alerts.
+      Applied SignalDesk tags to six Terraform-managed resources and verified
+      a follow-up plan reported no changes. Configured a $10 monthly AWS
+      account budget with email alerts and verified the recipient.
 
 Completion: Terraform manages the intended AWS resources through a
 reviewable workflow, with data preservation documented.
