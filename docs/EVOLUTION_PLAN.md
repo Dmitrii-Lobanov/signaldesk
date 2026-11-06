@@ -241,3 +241,16 @@ External side effects require their own deduplication or reconciliation.
 CSV import, vector search, semantic clustering, opportunity scoring,
 full decision tracking, Kubernetes, and elaborate membership administration
 remain outside this plan.
+
+## Checkpoint — 2026-11-06
+
+- GitHub Actions published API/web images tagged
+  c6a2737f3e1228f0de59af476d3ad676b8119316.
+- EC2 pulled images using SignalDeskEc2EcrReader.
+- Deployment completed; no migrations were pending.
+- Verified HTTP 200, editor sign-in, and all three existing feedback records.
+- Pre-deployment backup:
+  /home/ubuntu/signaldesk-backups/pre-ecr-20261106T195816Z.dump
+  Archive listing check passed; restoration was not tested.
+- Next: fix startup HTTP-check retries, persist deployed image selection,
+  then verify viewer access, rollback, isolated restore, and HTTPS.
