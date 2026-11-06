@@ -3,10 +3,9 @@ resource "aws_instance" "app" {
   instance_type = "m7i-flex.large"
   key_name      = "signaldesk_001"
 
-  subnet_id                   = data.aws_subnet.existing.id
-  private_ip                  = "172.31.39.204"
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.app.id]
+  subnet_id              = data.aws_subnet.existing.id
+  private_ip             = "172.31.39.204"
+  vpc_security_group_ids = [aws_security_group.app.id]
 
   monitoring              = false
   disable_api_termination = false
