@@ -87,7 +87,11 @@ reviewable workflow, with data preservation documented.
       Verified that the workflow on `main` assumes
       `SignalDeskGitHubEcrPublisher` using temporary AWS credentials.
       Evidence: GitHub Actions run `41852904585`, attempt 2.
-- [ ] Configure secure runtime secrets and application settings.
+- [x] Configure secure runtime secrets and application settings.
+      Verified on EC2 on 2026-11-06: protected runtime environment file,
+      successful migrations, healthy API/web containers, editor sign-in,
+      and creation of “Deployment verification — November 6”.
+      Access currently uses an SSH tunnel; HTTPS remains pending.
 - [ ] Configure a domain, HTTPS, and appropriate demo access.
 - [ ] Resolve the existing SSH-on-port-443 arrangement.
 - [ ] Automate deployment, controlled migrations, and health checks.
