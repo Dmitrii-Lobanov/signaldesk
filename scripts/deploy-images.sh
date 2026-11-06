@@ -16,7 +16,7 @@ compose() {
 compose config -q
 compose pull api web
 compose up -d --wait postgres
-compose run --rm --no-deps --no-build api \
+compose run --rm --no-deps -T api \
   node node_modules/typeorm/cli.js migration:run \
   -d apps/api/dist/data-source.js
 compose up -d --no-build --wait --wait-timeout 120 api web
