@@ -20,7 +20,9 @@ compose run --rm --no-deps -T api \
   node node_modules/typeorm/cli.js migration:run \
   -d apps/api/dist/data-source.js
 compose up -d --no-build --wait --wait-timeout 120 api web
-curl --fail --silent --show-error --retry 5 --retry-delay 2 \
-  --retry-connrefused --output /dev/null \
+curl --fail --silent --show-error \
+  --connect-timeout 5 --max-time 10 \
+  --retry 10 --retry-delay 2 --retry-max-time 60 \
+  --retry-all-errors --output /dev/null \
   http://127.0.0.1:3000/sign-in
 compose ps
