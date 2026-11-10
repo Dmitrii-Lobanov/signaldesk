@@ -92,18 +92,24 @@ reviewable workflow, with data preservation documented.
       successful migrations, healthy API/web containers, editor sign-in,
       and creation of “Deployment verification — November 6”.
       Access currently uses an SSH tunnel; HTTPS remains pending.
-- [ ] Configure a domain, HTTPS, and appropriate demo access.
-- [ ] Resolve the existing SSH-on-port-443 arrangement.
+- [x] Configure a domain, HTTPS, and appropriate demo access.
+      Verified Vercel frontend and DuckDNS HTTPS API on 2026-11-10.
+      Editor created feedback; viewer saw all four records without capture controls.
+- [x] Resolve the existing SSH-on-port-443 arrangement.
+      SSH now listens on port 22; Caddy handles HTTPS on port 443.
 - [x] Automate deployment, controlled migrations, and health checks.
-      EC2 rerun passed on 2026-11-09, including the HTTP startup retry.
-      Automatic backup and new recovery tools added on 2026-11-10;
-      the updated remote deployment path still needs an EC2 rehearsal.
-- [ ] Verify rollback using compatible application and database versions.
+      EC2 deployment passed with automatic backup, migration checks,
+      application startup checks, and HTTPS API readiness.
+- [x] Verify rollback using compatible application and database versions.
+      Switched EC2 images to 95c3b997e844 and returned to c6a2737.
+      HTTP checks passed in both directions. Application source and schema
+      were unchanged; rollback across schema changes was not tested.
 - [x] Verify backup restoration in an isolated environment.
-      On 2026-11-10 the off-instance November 6 archive restored into a
-      temporary PostgreSQL 18 container: 3 feedback records and 6 migrations.
-      Application sign-in against the restored database was not tested.
-- [ ] Provide reproducible synthetic demo data and accounts.
+      November 6 archive restored on the Mac: 3 feedback records and
+      6 migrations. Application sign-in against the restored DB was not tested.
+- [x] Provide reproducible synthetic demo data and accounts.
+      Fresh isolated database setup passed on 2026-11-10: migrations,
+      one sample feedback record, and editor/viewer verification twice.
 
 Completion: the current application can be deployed, accessed through
 HTTPS, rolled back, and restored using documented procedures.
