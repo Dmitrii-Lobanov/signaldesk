@@ -72,16 +72,5 @@ Migration reversals are not run automatically. The current rehearsal covers
 configuration recovery without schema changes; cross-version migration
 recovery remains unverified.
 
-## Migration recovery policy
 
-Before deployment, retain the working images and a verified database backup.
-Review whether each migration remains compatible with the previous application.
-
-If the schema is compatible, restore the retained application image.
-Otherwise, prefer a reviewed forward fix. Restoring a pre-migration backup
-requires stopping writes and explicitly accounting for writes made since
-that backup.
-
-Migration reversals are not run automatically. The current rehearsal covers
-configuration recovery without schema changes; cross-version migration
-recovery remains unverified.
+For versioned ECR deployment tools, see [release operations](RELEASE_OPERATIONS.md).

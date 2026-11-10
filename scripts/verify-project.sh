@@ -26,8 +26,7 @@ npm run format:check
 ./node_modules/.bin/prettier --check apps/web/e2e/reliable-feedback.spec.mjs
 
 node --check apps/api/scripts/seed-dev-accounts.mjs
-bash -n scripts/reset-local-demo.sh
-bash -n scripts/verify-project.sh
+bash -n scripts/*.sh
 
 npm run test --workspace=apps/api
 npm run test:unit --workspace=apps/web

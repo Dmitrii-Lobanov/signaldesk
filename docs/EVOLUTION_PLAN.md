@@ -1,6 +1,6 @@
 # SignalDesk evolution plan
 
-Status: planned; implementation has not been verified.
+Status: Epics 1–2 verified; Epic 3 in progress. Later epics remain planned.
 Created: 2026-10-28.
 
 ## Goal
@@ -94,9 +94,15 @@ reviewable workflow, with data preservation documented.
       Access currently uses an SSH tunnel; HTTPS remains pending.
 - [ ] Configure a domain, HTTPS, and appropriate demo access.
 - [ ] Resolve the existing SSH-on-port-443 arrangement.
-- [ ] Automate deployment, controlled migrations, and health checks.
+- [x] Automate deployment, controlled migrations, and health checks.
+      EC2 rerun passed on 2026-11-09, including the HTTP startup retry.
+      Automatic backup and new recovery tools added on 2026-11-10;
+      the updated remote deployment path still needs an EC2 rehearsal.
 - [ ] Verify rollback using compatible application and database versions.
-- [ ] Verify backup restoration in an isolated environment.
+- [x] Verify backup restoration in an isolated environment.
+      On 2026-11-10 the off-instance November 6 archive restored into a
+      temporary PostgreSQL 18 container: 3 feedback records and 6 migrations.
+      Application sign-in against the restored database was not tested.
 - [ ] Provide reproducible synthetic demo data and accounts.
 
 Completion: the current application can be deployed, accessed through
@@ -254,3 +260,15 @@ remain outside this plan.
   Archive listing check passed; restoration was not tested.
 - Next: fix startup HTTP-check retries, persist deployed image selection,
   then verify viewer access, rollback, isolated restore, and HTTPS.
+
+## Checkpoint — 2026-11-10
+
+- On November 9, saved API/web image selections in EC2 `.env.deploy`,
+  reran deployment successfully, and verified viewer sign-in with read-only UI.
+- Copied the November 6 database archive off EC2 to the operator Mac.
+- Added deployment backup, isolated restore, and schema-compatible rollback
+  commands. See [release operations](operations/RELEASE_OPERATIONS.md).
+- Isolated restore passed on November 10: 3 feedback records, 6 migrations;
+  temporary container removed.
+- Remaining gates: protected rollback rehearsal,
+  fresh synthetic setup verification, domain/HTTPS and SSH port resolution.

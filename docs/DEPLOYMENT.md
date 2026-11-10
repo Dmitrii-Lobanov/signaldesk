@@ -154,6 +154,10 @@ sudo docker compose --env-file .env.deploy -f compose.deploy.yaml config -q
 
 ## Deploy
 
+For the current versioned ECR deployment, use the
+[release operations runbook](operations/RELEASE_OPERATIONS.md).
+The build-based commands below describe first-time local-image setup.
+
 Start PostgreSQL and build the API image:
 
 ```sh
